@@ -1,0 +1,27 @@
+{
+  "data": {
+    "accounts": [
+      {
+        "id": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+        "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+        "state": "UPDATED",
+        "totalResets": "0",
+        "totalUpdates": "1"
+      },
+      {
+        "id": "0x959922be3caee4b8cd9a407cc3ac1c251c2007b0",
+        "address": "0x959922be3caee4b8cd9a407cc3ac1c251c2007b0",
+        "state": "INITIAL",
+        "totalResets": "1",
+        "totalUpdates": "0"
+      },
+      {
+        "id": "0xbffab14c5f812d3200a333594fe86f8410848852",
+        "address": "0xbffab14c5f812d3200a333594fe86f8410848852",
+        "state": "INITIAL",
+        "totalResets": "1",
+        "totalUpdates": "1"
+      }
+    ]
+  }
+}

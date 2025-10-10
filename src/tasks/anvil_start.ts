@@ -1,4 +1,5 @@
 import { ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+import { waitForService } from "../utils/wait_for_service.ts";
 
 export async function startAnvilTask(): Promise<void> {
   // Start anvil in the background
@@ -11,10 +12,7 @@ export async function startAnvilTask(): Promise<void> {
   console.log("🚀 Starting anvil...");
 
   // Wait for anvil to be ready by checking the RPC endpoint
-  const maxRetries = 30;
-  const retryDelay = 1000; // 1 second
-
-  for (let i = 0; i < maxRetries; i++) {
+  const checkAnvil = async (): Promise<boolean> => {
     try {
       const response = await fetch(ANVIL_DEFAULT_RPC_URL, {
         method: "POST",
@@ -27,16 +25,15 @@ export async function startAnvilTask(): Promise<void> {
         })
       });
 
-      if (response.ok) {
-        console.log("✅ Anvil is ready and accepting connections");
-        return;
-      }
+      return response.ok;
     } catch {
-      // Anvil not ready yet, continue waiting
+      return false;
     }
+  };
 
-    await new Promise(resolve => setTimeout(resolve, retryDelay));
-  }
-
-  throw new Error("Anvil failed to start within the expected time");
+  await waitForService(checkAnvil, {
+    serviceName: "anvil",
+    maxRetries: 30,
+    retryDelay: 1000
+  });
 }

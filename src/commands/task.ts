@@ -30,7 +30,6 @@ export const startAnvilCommand = new Command()
   .action(async () => {
     try {
       await startAnvilTask();
-      Deno.exit(0);
     } catch (error) {
       console.error("Error starting anvil:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -47,7 +46,6 @@ export const anvilSetupCommand = new Command()
       await startAnvilTask();
       await generateAllProjectsTask();
       await deployAllProjectsTask(ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY);
-      Deno.exit(0);
     } catch (error) {
       console.error("Error during anvil setup:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
