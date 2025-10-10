@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title {{ name }}
+ * @dev Fake contract that emits events for testing purposes
+ * Generated from subgraph definition
+ */
+contract {{ name }} {
+{{ for e of eventDeclarations }}
+{{ e }}
+{{ /for }}
+{{ for e of functionsDeclarations }}
+{{ e }}
+{{ /for }}
+}
+
+

@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "run": "deno run --allow-read --allow-write --allow-run --allow-net src/main.ts"
+  },
+  "imports": {
+    "cliffy/command": "https://deno.land/x/cliffy@v1.0.0-rc.4/command/mod.ts",
+    "std/": "https://deno.land/std@0.208.0/",
+    "vento": "https://deno.land/x/vento@v2.0.0/mod.ts"
+  }
+}
