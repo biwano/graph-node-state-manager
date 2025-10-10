@@ -3,7 +3,7 @@
 import { ensureDir, copy } from "std/fs/mod.ts";
 import { DENO_COMMAND_OPTIONS } from "../src/utils/constants.ts";
 import { readConfig } from "../src/utils/config.ts";
-import { waitForGraphNode } from "../src/utils/wait_for_service.ts";
+import { waitForGraphNode, waitForGraphSync } from "../src/utils/graph-node.ts";
 
 async function copyTestEvents(): Promise<string[]> {
   console.log("📁 Copying test event files...");
@@ -97,6 +97,9 @@ async function loadExpectedResponse(): Promise<any> {
 }
 
 
+
+
+
 async function queryGraphQL(): Promise<void> {
   console.log("🔍 Querying GraphQL...");
   
@@ -110,8 +113,8 @@ async function queryGraphQL(): Promise<void> {
   
   console.log(`GraphQL URL: ${graphqlUrl}`);
   
-  // Wait for graph-node to be ready and allow time for subgraph sync
-  await waitForGraphNode(5000);
+  // Wait for graph to sync with Anvil blocks
+  await waitForGraphSync(graphqlUrl);
   
   // Query for accounts with all relevant state fields
   const query = `

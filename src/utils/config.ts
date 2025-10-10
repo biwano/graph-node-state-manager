@@ -1,5 +1,5 @@
 import { exists } from "std/fs/exists.ts";
-import { REGISTRY_PATH } from "./constants.ts";
+import { CONFIG_PATH } from "./constants.ts";
 
 export interface ProjectConfigContract { 
   name: string; 
@@ -15,13 +15,13 @@ export interface ProjectConfigEntry {
 export type ProjectConfig = Record<string, ProjectConfigEntry>
 
 export async function readConfig(): Promise<ProjectConfig> {
-  if (!(await exists(REGISTRY_PATH))) return {};
-  const content = await Deno.readTextFile(REGISTRY_PATH);
+  if (!(await exists(CONFIG_PATH))) return {};
+  const content = await Deno.readTextFile(CONFIG_PATH);
   return JSON.parse(content) as ProjectConfig;
 }
 
 export async function writeConfig(config: ProjectConfig): Promise<void> {
-  await Deno.writeTextFile(REGISTRY_PATH, JSON.stringify(config, null, 2));
+  await Deno.writeTextFile(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
 export async function upsertProject(projectName: string, entry: Partial<ProjectConfigEntry>): Promise<ProjectConfig> {
@@ -42,7 +42,7 @@ export async function removeProject(projectName: string): Promise<void> {
   if (!(projectName in cfg)) return;
   delete cfg[projectName];
   if (Object.keys(cfg).length === 0) {
-    await Deno.remove(REGISTRY_PATH).catch(() => {});
+    await Deno.remove(CONFIG_PATH).catch(() => {});
     return;
   }
   await writeConfig(cfg);
@@ -72,6 +72,23 @@ export async function setGraphQLUrl(projectName: string, graphqlUrl: string): Pr
   current.graphql_url = graphqlUrl;
   cfg[projectName] = current;
   await writeConfig(cfg);
+}
+
+export async function getValidConfig(): Promise<Record<string, { subgraph_path: string }>> {
+  // Check if config exists
+  if (!(await exists(CONFIG_PATH))) {
+    throw new Error("No projects found in config. Run 'subgraph:add' first.");
+  }
+
+  const configContent = await Deno.readTextFile(CONFIG_PATH);
+  const config = JSON.parse(configContent) as Record<string, { subgraph_path: string }>;
+  
+  const projectNames = Object.keys(config);
+  if (projectNames.length === 0) {
+    throw new Error("No projects found in config. Run 'subgraph:add' first.");
+  }
+
+  return config;
 }
 
 

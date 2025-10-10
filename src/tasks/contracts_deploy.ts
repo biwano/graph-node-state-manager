@@ -1,5 +1,5 @@
 import { exists } from "std/fs/exists.ts";
-import { validateRegistry } from "../utils/registry.ts";
+import { getValidConfig } from "../utils/config.ts";
 import { upsertContracts } from "../utils/config.ts";
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
@@ -62,8 +62,8 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
 }
 
 export async function deployAllProjectsTask(rpcUrl: string, privateKey: string): Promise<void> {
-  const registry = await validateRegistry();
-  const projectNames = Object.keys(registry);
+  const config = await getValidConfig();
+  const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {
     const projectDir = `./foundry/${projectName}`;

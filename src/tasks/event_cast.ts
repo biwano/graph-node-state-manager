@@ -1,5 +1,5 @@
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
-import { validateRegistry } from "../utils/registry.ts";
+import { getValidConfig } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph_parser.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
@@ -52,13 +52,13 @@ export async function buildEventCastCommand(
   eventName: string,
   eventArgs: string[],
 ): Promise<void> {
-  const registry = await validateRegistry();
-  const knownProjects = Object.keys(registry);
-  if (!registry[projectName]) {
+  const config = await getValidConfig();
+  const knownProjects = Object.keys(config);
+  if (!config[projectName]) {
     throw new Error(`Unknown project '${projectName}'. Known projects: ${knownProjects.join(", ")}`);
   }
 
-  const subgraphPath = registry[projectName].subgraph_path;
+  const subgraphPath = config[projectName].subgraph_path;
   const { contracts } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
 
   const contract = contracts.find((c) => c.name === dataSourceName);

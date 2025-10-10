@@ -1,5 +1,3 @@
-import { GRAPH_NODE_URL } from "./constants.ts";
-
 export interface WaitForServiceOptions {
   maxRetries?: number;
   retryDelay?: number;
@@ -36,37 +34,4 @@ export async function waitForService(
   throw new Error(`${serviceName} failed to start within the expected time`);
 }
 
-export async function waitForGraphNode(additionalDelay: number = 0): Promise<void> {
-  const checkGraphNode = async (): Promise<boolean> => {
-    try {
-      // Try the admin JSON-RPC endpoint - more reliable for health checks
-      const response = await fetch(GRAPH_NODE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "subgraph_deploy",
-          params: [],
-          id: 1
-        })
-      });
-
-      return response.ok;
-    } catch {
-      return false;
-    }
-  };
-
-  await waitForService(checkGraphNode, {
-    serviceName: "graph-node",
-    maxRetries: 30,
-    retryDelay: 2000
-  });
-
-  // Add additional delay if specified (useful for waiting for subgraph sync)
-  if (additionalDelay > 0) {
-    console.log(`⏳ Waiting additional ${additionalDelay}ms for subgraph sync...`);
-    await new Promise(resolve => setTimeout(resolve, additionalDelay));
-  }
-}
 

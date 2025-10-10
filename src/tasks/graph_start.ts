@@ -1,5 +1,5 @@
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
-import { waitForGraphNode } from "../utils/wait_for_service.ts";
+import { waitForGraphNode } from "../utils/graph-node.ts";
 
 export async function startGraphNodeTask(): Promise<void> {
   console.log("🚀 Starting graph-node with docker-compose...");

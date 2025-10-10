@@ -1,7 +1,7 @@
 import { exists } from "std/fs/exists.ts";
 import { parse as yamlParse, stringify as yamlStringify } from "std/yaml/mod.ts";
 import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
-import { validateRegistry } from "../utils/registry.ts";
+import { getValidConfig } from "../utils/config.ts";
 import { readConfig, setGraphQLUrl } from "../utils/config.ts";
 
 async function prepareSubgraphYamlWithDeployedAddresses(
@@ -145,11 +145,11 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
 export async function deployAllGraphsTask(): Promise<void> {
   console.log("🚀 Deploying all subgraphs to local graph-node...");
   
-  const registry = await validateRegistry();
-  const projectNames = Object.keys(registry);
+  const config = await getValidConfig();
+  const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {
-    const projectConfig = registry[projectName];
+    const projectConfig = config[projectName];
     const subgraphPath = projectConfig.subgraph_path;
     
     await deploySubgraph(subgraphPath, projectName);

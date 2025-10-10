@@ -4,7 +4,7 @@ import { parseSubgraph } from "../utils/subgraph_parser.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { generateFakeContract } from "../utils/contract_generator.ts";
 import { buildDeployScript } from "../utils/deploy_script_generator.ts";
-import { validateRegistry } from "../utils/registry.ts";
+import { getValidConfig } from "../utils/config.ts";
 
 export async function generateForProjectTask(projectName: string, subgraphPath: string, outRoot: string): Promise<void> {
   const resolvedSubgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
@@ -36,11 +36,11 @@ export async function generateForProjectTask(projectName: string, subgraphPath: 
 }
 
 export async function generateAllProjectsTask(): Promise<void> {
-  const registry = await validateRegistry();
-  const projectNames = Object.keys(registry);
+  const config = await getValidConfig();
+  const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {
-    const projectConfig = registry[projectName];
+    const projectConfig = config[projectName];
     await generateForProjectTask(projectName, projectConfig.subgraph_path, "./foundry");
   }
 }
