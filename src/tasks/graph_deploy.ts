@@ -1,6 +1,6 @@
 import { exists } from "std/fs/exists.ts";
 import { parse as yamlParse, stringify as yamlStringify } from "std/yaml/mod.ts";
-import { GRAPH_NODE_URL, IPFS_URL } from "../utils/constants.ts";
+import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { validateRegistry } from "../utils/registry.ts";
 import { readConfig } from "../utils/config.ts";
 
@@ -37,13 +37,13 @@ async function prepareSubgraphYamlWithDeployedAddresses(
     await Deno.writeTextFile(subgraphYamlPath, tmpContent);
   }
   console.log(modified
-    ? "📝 subgraph.yaml addresses temporarily updated from config"
+    ? `📝 ${SUBGRAPH_YAML_FILENAME} addresses temporarily updated from config`
     : "ℹ️ No datasource address updates needed (no matching deployed contracts found)");
 
   return { modified, originalContent };
 }
 
-async function createSubgraphIfNeeded(projectName: string): Promise<void> {
+async function createSubgraph(projectName: string): Promise<void> {
   console.log(`📝 Creating subgraph: ${projectName}`);
   const createProcess = new Deno.Command("npx", {
     args: [
@@ -69,7 +69,7 @@ async function createSubgraphIfNeeded(projectName: string): Promise<void> {
   console.log(new TextDecoder().decode(stdout));
 }
 
-async function deploySubgraphVersion(projectName: string, subgraphYamlPath: string): Promise<void> {
+async function deploySubgraphVersion(projectName: string): Promise<void> {
   const versionLabel = `v${Date.now()}`;
 
   console.log(`🚀 Deploying subgraph: ${projectName} with version: ${versionLabel}`);
@@ -81,7 +81,7 @@ async function deploySubgraphVersion(projectName: string, subgraphYamlPath: stri
       "--ipfs", IPFS_URL,
       "--version-label", versionLabel,
       projectName,
-      subgraphYamlPath,
+      SUBGRAPH_YAML_FILENAME,
     ],
     stdout: "piped",
     stderr: "piped",
@@ -97,10 +97,10 @@ async function deploySubgraphVersion(projectName: string, subgraphYamlPath: stri
 }
 
 async function deploySubgraph(subgraphPath: string, projectName: string): Promise<void> {
-  const subgraphYamlPath = `${subgraphPath}/subgraph.yaml`;
+  const subgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
   
   if (!(await exists(subgraphYamlPath))) {
-    throw new Error(`subgraph.yaml not found at ${subgraphYamlPath}`);
+    throw new Error(`${SUBGRAPH_YAML_FILENAME} not found at ${subgraphYamlPath}`);
   }
 
   console.log(`🚀 Creating and deploying subgraph for project: ${projectName}`);
@@ -115,14 +115,14 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
   
   try {
     Deno.chdir(subgraphPath);
-    await createSubgraphIfNeeded(projectName);
-    await deploySubgraphVersion(projectName, subgraphYamlPath);
+    await createSubgraph(projectName);
+    await deploySubgraphVersion(projectName);
   } finally {
+    Deno.chdir(originalCwd);
     if (modified) {
       await Deno.writeTextFile(subgraphYamlPath, originalContent);
-      console.log("🔁 Restored original subgraph.yaml");
+      console.log(`🔁 Restored original ${SUBGRAPH_YAML_FILENAME}`);
     }
-    Deno.chdir(originalCwd);
   }
 }
 

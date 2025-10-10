@@ -1,12 +1,13 @@
 import { ensureDir } from "std/fs/ensure_dir.ts";
 import { parse as parseYaml } from "std/yaml/mod.ts";
+import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { upsertProject } from "../utils/config.ts";
 
 export async function subgraphAddTask(subgraphPath: string, projectDir: string, projectName: string): Promise<void> {
   console.log(`Initializing foundry project at: ${projectDir}`);
 
   // Validate subgraph YAML file
-  const subgraphYamlPath = `${subgraphPath}/subgraph.yaml`;
+  const subgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
   console.log(`Validating subgraph YAML file: ${subgraphYamlPath}`);
 
   const subgraphContent = await Deno.readTextFile(subgraphYamlPath);

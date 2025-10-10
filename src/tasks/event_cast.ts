@@ -1,6 +1,7 @@
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
 import { validateRegistry } from "../utils/registry.ts";
 import { parseSubgraph } from "../utils/subgraph_parser.ts";
+import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
 
 function capitalize(text: string): string {
@@ -58,7 +59,7 @@ export async function buildEventCastCommand(
   }
 
   const subgraphPath = registry[projectName].subgraph_path;
-  const { contracts } = await parseSubgraph(`${subgraphPath}/subgraph.yaml`);
+  const { contracts } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
 
   const contract = contracts.find((c) => c.name === dataSourceName);
   if (!contract) {
