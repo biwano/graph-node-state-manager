@@ -1,6 +1,7 @@
 import { exists } from "std/fs/exists.ts";
 import { validateRegistry } from "../utils/registry.ts";
 import { upsertContracts } from "../utils/config.ts";
+import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
 function parseDeployedAddressesFromStdout(output: string): Record<string, string> {
   const res: Record<string, string> = {};
@@ -37,9 +38,8 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
       "--private-key",
       privateKey,
     ],
-    stdout: "piped",
-    stderr: "piped",
     cwd: projectDir,
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await cmd.output();

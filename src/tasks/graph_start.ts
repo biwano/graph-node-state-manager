@@ -1,4 +1,4 @@
-import { GRAPH_NODE_URL } from "../utils/constants.ts";
+import { GRAPH_NODE_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
 export async function startGraphNodeTask(): Promise<void> {
   console.log("🚀 Starting graph-node with docker-compose...");
@@ -6,8 +6,7 @@ export async function startGraphNodeTask(): Promise<void> {
   // Start graph-node using docker-compose
   const dockerComposeProcess = new Deno.Command("docker", {
     args: ["compose", "up", "-d", "graph-node"],
-    stdout: "piped",
-    stderr: "piped",
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await dockerComposeProcess.output();

@@ -15,8 +15,8 @@ export async function addStateTask(files: string[]): Promise<void> {
       env: {
         EVENT: EVENT_SCRIPT,
       },
-      stdout: "inherit",
-      stderr: "inherit",
+      stdout: "piped",
+      stderr: "piped",
     });
 
     const { code } = await process.output();

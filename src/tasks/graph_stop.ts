@@ -1,11 +1,12 @@
+import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+
 export async function stopGraphNodeTask(): Promise<void> {
   console.log("🛑 Stopping graph-node...");
 
   // Stop graph-node using docker-compose
   const dockerComposeProcess = new Deno.Command("docker", {
     args: ["compose", "down"],
-    stdout: "piped",
-    stderr: "piped",
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await dockerComposeProcess.output();

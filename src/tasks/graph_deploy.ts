@@ -1,6 +1,6 @@
 import { exists } from "std/fs/exists.ts";
 import { parse as yamlParse, stringify as yamlStringify } from "std/yaml/mod.ts";
-import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
+import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 import { validateRegistry } from "../utils/registry.ts";
 import { readConfig, setGraphQLUrl } from "../utils/config.ts";
 
@@ -52,9 +52,8 @@ async function createSubgraph(projectName: string, cwd?: string): Promise<void> 
       "--node", `${GRAPH_NODE_URL}/`,
       projectName,
     ],
-    stdout: "piped",
-    stderr: "piped",
     cwd: cwd,
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await createProcess.output();
@@ -84,9 +83,8 @@ async function deploySubgraphVersion(projectName: string, cwd?: string): Promise
       projectName,
       SUBGRAPH_YAML_FILENAME,
     ],
-    stdout: "piped",
-    stderr: "piped",
     cwd: cwd,
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await deployProcess.output();
@@ -101,7 +99,7 @@ async function deploySubgraphVersion(projectName: string, cwd?: string): Promise
   
   // Extract IPFS hash from "Build completed" line
   // The output contains a line like "Build completed: QmUvX7Mi9KU72Rwa11SNY1Fo82iq8atXa4V7MqWtjyEqSD"
-  const buildCompletedMatch = output.match(/Build completed: (Qm[a-zA-Z0-9]+)/);
+  const buildCompletedMatch = output.match(/Build completed: ([a-zA-Z0-9]+)/);
 
   if (!buildCompletedMatch) {
     throw new Error(`Could not extract deployment info from output: ${output}`);

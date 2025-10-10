@@ -1,10 +1,11 @@
+import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+
 async function removeVolume(volumeName: string, displayName: string): Promise<void> {
   console.log(`🗑️  Removing ${displayName} data volume...`);
   
   const volumeProcess = new Deno.Command("docker", {
     args: ["volume", "rm", volumeName],
-    stdout: "piped",
-    stderr: "piped",
+    ...DENO_COMMAND_OPTIONS,
   });
 
   const { code, stdout, stderr } = await volumeProcess.output();

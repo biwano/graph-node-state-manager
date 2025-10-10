@@ -1,6 +1,6 @@
 import { ensureDir } from "std/fs/ensure_dir.ts";
 import { parse as parseYaml } from "std/yaml/mod.ts";
-import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
+import { SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 import { upsertProject } from "../utils/config.ts";
 
 export async function subgraphAddTask(subgraphPath: string, projectDir: string, projectName: string): Promise<void> {
@@ -21,9 +21,8 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
 
   const initProcess = new Deno.Command("forge", {
     args: ["init", ".", "--force"],
-    stdout: "piped",
-    stderr: "piped",
     cwd: projectDir,
+    ...DENO_COMMAND_OPTIONS,
   });
   const { code, stdout, stderr } = await initProcess.output();
   if (code !== 0) {

@@ -11,7 +11,7 @@ import { addStateTask } from "./state_add.ts";
 
 export async function setStateTask(files: string[]): Promise<void> {
   console.log("🚀 Starting set state command...");
-/*
+
   await Promise.all([
     (async () => {
       await killAnvilTask();
@@ -22,20 +22,16 @@ export async function setStateTask(files: string[]): Promise<void> {
       await stopGraphNodeTask();
       await wipeGraphNodeTask();
     })()])
-*/
+
   await Promise.all([
     deployAllProjectsTask(ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY),
     (async () => {
       await startGraphNodeTask();
-      console.log("aadsqd")
       await deployAllGraphsTask();
-      console.log("bbdsqd")
     })()
   ]);
-  console.log("ccdsqd")
 
   await addStateTask(files);
-  
   
   console.log("🎉 State command completed successfully!");
 }
