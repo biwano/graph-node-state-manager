@@ -38,6 +38,24 @@ async function copyTestEvents(): Promise<string[]> {
   return copiedFiles;
 }
 
+async function installTestSubgraph(): Promise<void> {
+  console.log("📦 Installing test subgraph...");
+  
+  const process = new Deno.Command("deno", {
+    args: ["task", "run", "subgraph", "add", "./test/subgraph", "--name", "default"],
+    ...DENO_COMMAND_OPTIONS,
+  });
+
+  const { code, stdout, stderr } = await process.output();
+
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    throw new Error(`Subgraph installation failed: ${errorText}`);
+  }
+
+  console.log("✅ Test subgraph installed");
+}
+
 async function runStateSetup(eventFiles: string[]): Promise<void> {
   console.log("🚀 Running state setup...");
   
@@ -186,6 +204,7 @@ async function main(): Promise<void> {
   try {
     console.log("🧪 Starting integration test...");
     
+    await installTestSubgraph();
     copiedFiles = await copyTestEvents();
     await runStateSetup(copiedFiles);
     await queryGraphQL();

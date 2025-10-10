@@ -92,3 +92,13 @@ The tool uses a `config.json` registry file at the repository root:
 ## Quality
 
 No compile warnings - All code passes Deno linting without warnings
+
+## CI/CD
+
+- **GitHub Actions**: Automated integration testing via `.github/workflows/integration-test.yml`
+- **Triggers**: Runs on push to main/develop branches, pull requests, and manual dispatch
+- **Test Coverage**: Full end-to-end integration test that:
+  - Sets up Anvil, IPFS, PostgreSQL, and Graph Node
+  - Runs the complete state setup workflow
+  - Validates GraphQL responses against expected fixtures
+  - Cleans up all services after completion

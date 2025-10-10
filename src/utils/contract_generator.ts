@@ -1,5 +1,6 @@
 import { Contract } from "./types.ts";
-import { renderWithVento } from "./template_renderer.ts";
+import vento from "vento";
+import { join } from "std/path/mod.ts";
 
 export async function generateFakeContract(contract: Contract): Promise<string> {
   if (!contract.events || contract.events.length === 0) {
@@ -38,4 +39,27 @@ function formatEmitArguments(inputs: Array<{ name: string; type: string; indexed
 
 function capitalize(str: string): string {
   return str.length ? str[0].toUpperCase() + str.slice(1) : str;
+}
+
+export async function buildDeployScript(_projectName: string, contracts: Contract[]): Promise<string> {
+  const data = {
+    contracts: contracts.map((c) => ({
+      ...c,
+      instanceName: `inst${c.name}`,
+    })),
+  } as Record<string, unknown>;
+  return await renderWithVento("Deploy.s.vto", data);
+}
+
+export async function renderWithVento(templateName: string, data: Record<string, unknown>): Promise<string> {
+  try {
+    const env = vento();
+    const templatePath = join("./src/templates", templateName);
+    const template = await env.load(templatePath);
+    const result = await template(data);
+    return result.content;
+  } catch (_e) {
+    // Bubble up error to let caller decide fallback
+    throw _e;
+  }
 }

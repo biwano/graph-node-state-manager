@@ -1,6 +1,6 @@
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 import { getValidConfig } from "../utils/config.ts";
-import { parseSubgraph } from "../utils/subgraph_parser.ts";
+import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
 

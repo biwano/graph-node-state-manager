@@ -1,9 +1,9 @@
 import { ensureDir } from "std/fs/ensure_dir.ts";
 import { join } from "std/path/mod.ts";
-import { parseSubgraph } from "../utils/subgraph_parser.ts";
+import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { generateFakeContract } from "../utils/contract_generator.ts";
-import { buildDeployScript } from "../utils/deploy_script_generator.ts";
+import { buildDeployScript } from "../utils/contract_generator.ts";
 import { getValidConfig } from "../utils/config.ts";
 
 export async function generateForProjectTask(projectName: string, subgraphPath: string, outRoot: string): Promise<void> {
