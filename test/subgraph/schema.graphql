@@ -1,0 +1,15 @@
+type Account @entity(immutable: false) {
+  id: ID! # account address
+  address: Bytes! # account address as bytes
+  state: AccountState!
+  registeredAt: BigInt!
+  lastUpdatedAt: BigInt!
+  totalResets: BigInt!
+  totalUpdates: BigInt!
+}
+
+enum AccountState {
+  INITIAL
+  UPDATED
+}
+

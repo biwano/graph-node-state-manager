@@ -1,0 +1,20 @@
+{
+  "name": "timed-contract-subgraph",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "create-local": "graph create --node http://localhost:8020/ timed-contract",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 timed-contract",
+    "prepare": "npm run codegen && npm run build"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-ts": "^0.38.1"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.97.1",
+    "typescript": "^5.6.3"
+  }
+}
+

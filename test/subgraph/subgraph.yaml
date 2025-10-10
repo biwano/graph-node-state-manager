@@ -1,0 +1,29 @@
+specVersion: 0.0.6
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TimedContract
+    network: mainnet
+    source:
+      address: "0xbFFab14C5f812d3200A333594fE86f8410848852"
+      abi: TimedContract
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+      abis:
+        - name: TimedContract
+          file: ../../out/TimedContract.sol/TimedContract.json
+      eventHandlers:
+        - event: AccountRegistered(indexed address)
+          handler: handleAccountRegistered
+        - event: StateReset(indexed address)
+          handler: handleStateReset
+        - event: StateUpdated(indexed address)
+          handler: handleStateUpdated
+      file: ./src/mapping.ts
+
