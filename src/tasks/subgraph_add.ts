@@ -19,12 +19,11 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
 
   await ensureDir(projectDir);
 
-  const originalCwd = Deno.cwd();
-  Deno.chdir(projectDir);
   const initProcess = new Deno.Command("forge", {
     args: ["init", ".", "--force"],
     stdout: "piped",
     stderr: "piped",
+    cwd: projectDir,
   });
   const { code, stdout, stderr } = await initProcess.output();
   if (code !== 0) {
@@ -33,7 +32,6 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
   }
   console.log("Foundry project initialized successfully!");
   console.log(new TextDecoder().decode(stdout));
-  Deno.chdir(originalCwd);
 
   await upsertProject(projectName, { subgraph_path: subgraphPath });
   console.log(`Updated registry with project: ${projectName}`);

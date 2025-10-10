@@ -1,2 +1,7 @@
+# Documentation Requirements
 - The project specification is in the SPECS.md 
-- Always keep the SPECS.md file in sync with the actual code
+- **MANDATORY**: Always keep the SPECS.md file in sync with the actual code
+- **WORKFLOW**: After ANY code changes that affect functionality, CLI commands, or configuration:
+  1. Update SPECS.md immediately
+  2. Verify all changes are documented before considering task complete
+

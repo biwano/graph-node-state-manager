@@ -27,9 +27,6 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
     return;
   }
 
-  const originalCwd = Deno.cwd();
-  Deno.chdir(projectDir);
-
   const cmd = new Deno.Command("forge", {
     args: [
       "script",
@@ -42,10 +39,10 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
     ],
     stdout: "piped",
     stderr: "piped",
+    cwd: projectDir,
   });
 
   const { code, stdout, stderr } = await cmd.output();
-  Deno.chdir(originalCwd);
 
   if (code !== 0) {
     throw new Error(new TextDecoder().decode(stderr));

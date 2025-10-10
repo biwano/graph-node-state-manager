@@ -8,5 +8,7 @@ export const REGISTRY_PATH = `${cwd}/config.json`;
 export const FOUNDRY_ROOT = `${cwd}/foundry`;
 export const DEFAULT_PROJECT_NAME = "default";
 export const SUBGRAPH_YAML_FILENAME = "subgraph.yaml";
+export const EVENT_SCRIPT = "deno task run task event";
+export const SHELL = "bash";
 
 

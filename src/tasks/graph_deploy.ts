@@ -43,7 +43,7 @@ async function prepareSubgraphYamlWithDeployedAddresses(
   return { modified, originalContent };
 }
 
-async function createSubgraph(projectName: string): Promise<void> {
+async function createSubgraph(projectName: string, cwd?: string): Promise<void> {
   console.log(`📝 Creating subgraph: ${projectName}`);
   const createProcess = new Deno.Command("npx", {
     args: [
@@ -54,6 +54,7 @@ async function createSubgraph(projectName: string): Promise<void> {
     ],
     stdout: "piped",
     stderr: "piped",
+    cwd: cwd,
   });
 
   const { code, stdout, stderr } = await createProcess.output();
@@ -69,7 +70,7 @@ async function createSubgraph(projectName: string): Promise<void> {
   console.log(new TextDecoder().decode(stdout));
 }
 
-async function deploySubgraphVersion(projectName: string): Promise<string> {
+async function deploySubgraphVersion(projectName: string, cwd?: string): Promise<string> {
   const versionLabel = `v${Date.now()}`;
 
   console.log(`🚀 Deploying subgraph: ${projectName} with version: ${versionLabel}`);
@@ -85,6 +86,7 @@ async function deploySubgraphVersion(projectName: string): Promise<string> {
     ],
     stdout: "piped",
     stderr: "piped",
+    cwd: cwd,
   });
 
   const { code, stdout, stderr } = await deployProcess.output();
@@ -132,20 +134,13 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
     projectName,
   );
  
-  // Change to subgraph directory for deployment
-  const originalCwd = Deno.cwd();
+  // Deploy from subgraph directory
+  await createSubgraph(projectName, subgraphPath);
+  await deploySubgraphVersion(projectName, subgraphPath);
   
-  try {
-    Deno.chdir(subgraphPath);
-    await createSubgraph(projectName);
-    await deploySubgraphVersion(projectName);
-
-  } finally {
-    Deno.chdir(originalCwd);
-    if (modified) {
-      await Deno.writeTextFile(subgraphYamlPath, originalContent);
-      console.log(`🔁 Restored original ${SUBGRAPH_YAML_FILENAME}`);
-    }
+  if (modified) {
+    await Deno.writeTextFile(subgraphYamlPath, originalContent);
+    console.log(`🔁 Restored original ${SUBGRAPH_YAML_FILENAME}`);
   }
 }
 

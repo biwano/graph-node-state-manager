@@ -10,6 +10,7 @@ import { deployAllGraphsTask } from "../tasks/graph_deploy.ts";
 import { buildEventCastCommand } from "../tasks/event_cast.ts";
 import { generateAllProjectsTask } from "../tasks/contracts_generate.ts";
 import { inspectTxTask } from "../tasks/anvil_inspect.ts";
+import { addStateTask } from "../tasks/state_add.ts";
 
 export const killAnvilCommand = new Command()
   .name("anvil:stop")
@@ -177,6 +178,19 @@ export const anvilInspectCommand = new Command()
     }
   });
 
+export const addStateCommand = new Command()
+  .name("add-state")
+  .description("Execute event files with EVENT environment variable set")
+  .arguments("[files...:string]")
+  .action(async (_options, ...files: string[]) => {
+    try {
+      await addStateTask(files);
+    } catch (error) {
+      console.error("Error executing add-state command:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
   
 export const taskCommand = new Command()
   .name("task")
@@ -193,5 +207,6 @@ export const taskCommand = new Command()
   .command("graph:deploy", deployGraphCommand)
   .command("graph:setup", setupGraphCommand)
   .command("event", eventCommand)
+  .command("state:add", addStateCommand)
   
 

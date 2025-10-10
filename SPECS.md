@@ -52,7 +52,42 @@ The tasks are:
   - Deploy all registered subgraphs to the local node; `graph:setup` runs stop → wipe → start → deploy
 - `task event <project> <datasource> <event> [args...]`
   - Print a ready-to-run `cast send` command for a project's datasource event
+- `task state:add [files...]`
+  - Execute event files from the `events/` directory with EVENT environment variable set
+  - Each file is executed using bash with `EVENT="deno task run task event"`
+  - Files can use `$EVENT` to call the event command within their scripts
+  - Supports multiple files as arguments
+  - Logic implemented in `src/tasks/state_add.ts` following the task pattern
+- `set-state [files...]`
+  - Complete setup command: sets up anvil, graph node, and optionally executes event files
+  - Performs: anvil setup (kill → start → generate → deploy) + graph setup (stop → wipe → start → deploy)
+  - Then executes any provided event files from the `events/` directory
+  - Uses existing task functions directly for better performance and error handling
+  - Logic implemented in `src/tasks/state.ts` with `setStateTask()` function following the task pattern
 
+## Configuration
+
+The tool uses a `config.json` registry file at the repository root:
+```json
+{
+  "my-project": {
+    "subgraph_path": "./subgraph",
+    "contracts": [
+      {
+        "name": "TimedContract",
+        "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+      }
+    ],
+    "graphql_url": "http://localhost:8000/subgraphs/id/QmUvX7Mi9KU72Rwa11SNY1Fo82iq8atXa4V7MqWtjyEqSD"
+  }
+}
+```
+
+## Architecture
+
+- **Commands**: CLI command definitions in `src/commands/` (thin wrappers)
+- **Tasks**: Business logic in `src/tasks/` (reusable functions)
+- **Pattern**: Commands should delegate to task functions for better testability and reusability
 
 ## Quality
 
