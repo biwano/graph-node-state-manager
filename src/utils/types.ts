@@ -51,4 +51,3 @@ export interface EventHandler {
   handler: string;
 }
 
-

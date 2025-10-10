@@ -2,7 +2,7 @@ import { exists } from "std/fs/exists.ts";
 import { parse as yamlParse, stringify as yamlStringify } from "std/yaml/mod.ts";
 import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { validateRegistry } from "../utils/registry.ts";
-import { readConfig } from "../utils/config.ts";
+import { readConfig, setGraphQLUrl } from "../utils/config.ts";
 
 async function prepareSubgraphYamlWithDeployedAddresses(
   subgraphYamlPath: string,
@@ -69,7 +69,7 @@ async function createSubgraph(projectName: string): Promise<void> {
   console.log(new TextDecoder().decode(stdout));
 }
 
-async function deploySubgraphVersion(projectName: string): Promise<void> {
+async function deploySubgraphVersion(projectName: string): Promise<string> {
   const versionLabel = `v${Date.now()}`;
 
   console.log(`🚀 Deploying subgraph: ${projectName} with version: ${versionLabel}`);
@@ -92,8 +92,30 @@ async function deploySubgraphVersion(projectName: string): Promise<void> {
     const errorText = new TextDecoder().decode(stderr);
     throw new Error(`Failed to deploy subgraph ${projectName}: ${errorText}`);
   }
+  
+  const output = new TextDecoder().decode(stdout);
   console.log(`✅ Subgraph ${projectName} deployed successfully`);
-  console.log(new TextDecoder().decode(stdout));
+  console.log(output);
+  
+  // Extract IPFS hash from "Build completed" line
+  // The output contains a line like "Build completed: QmUvX7Mi9KU72Rwa11SNY1Fo82iq8atXa4V7MqWtjyEqSD"
+  const buildCompletedMatch = output.match(/Build completed: (Qm[a-zA-Z0-9]+)/);
+
+  if (!buildCompletedMatch) {
+    throw new Error(`Could not extract deployment info from output: ${output}`);
+  }
+  
+  // Use IPFS hash as deployment ID
+  const deploymentId = buildCompletedMatch[1];
+  console.log(`📝 Deployment ID (IPFS hash): ${deploymentId}`);
+  const graphqlUrl = `http://localhost:8000/subgraphs/id/${deploymentId}`;
+ 
+  
+  // Save GraphQL URL
+  await setGraphQLUrl(projectName, graphqlUrl);
+  console.log(`📝 GraphQL URL saved: ${graphqlUrl}`);
+ 
+  return graphqlUrl;
 }
 
 async function deploySubgraph(subgraphPath: string, projectName: string): Promise<void> {
@@ -117,6 +139,7 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
     Deno.chdir(subgraphPath);
     await createSubgraph(projectName);
     await deploySubgraphVersion(projectName);
+
   } finally {
     Deno.chdir(originalCwd);
     if (modified) {

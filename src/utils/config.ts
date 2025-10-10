@@ -1,8 +1,17 @@
 import { exists } from "std/fs/exists.ts";
-import { REGISTRY_PATH, FOUNDRY_ROOT } from "./constants.ts";
+import { REGISTRY_PATH } from "./constants.ts";
 
-export interface ProjectConfigContract { name: string; address: string }
-export interface ProjectConfigEntry { subgraph_path: string; contracts?: ProjectConfigContract[] }
+export interface ProjectConfigContract { 
+  name: string; 
+  address: string; 
+}
+
+export interface ProjectConfigEntry { 
+  subgraph_path: string; 
+  contracts?: ProjectConfigContract[];
+  graphql_url?: string;
+}
+
 export type ProjectConfig = Record<string, ProjectConfigEntry>
 
 export async function readConfig(): Promise<ProjectConfig> {
@@ -21,6 +30,7 @@ export async function upsertProject(projectName: string, entry: Partial<ProjectC
   const merged: ProjectConfigEntry = {
     subgraph_path: entry.subgraph_path ?? current.subgraph_path,
     contracts: entry.contracts ?? current.contracts,
+    graphql_url: entry.graphql_url ?? current.graphql_url,
   };
   cfg[projectName] = merged;
   await writeConfig(cfg);
@@ -54,6 +64,14 @@ export async function getDeployedAddress(projectName: string, contractName: stri
   if (!entry || !entry.contracts) return null;
   const found = entry.contracts.find((c) => c.name === contractName);
   return found ? found.address : null;
+}
+
+export async function setGraphQLUrl(projectName: string, graphqlUrl: string): Promise<void> {
+  const cfg = await readConfig();
+  const current = cfg[projectName] || { subgraph_path: "", contracts: [] };
+  current.graphql_url = graphqlUrl;
+  cfg[projectName] = current;
+  await writeConfig(cfg);
 }
 
 
