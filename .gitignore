@@ -1,4 +1,4 @@
-foundry
+foundry/**/*
 config.json
 node-data
 test/subgraph/node_modules

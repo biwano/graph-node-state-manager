@@ -18,10 +18,20 @@ cd graph-node-state-manager
 
 ## Usage
 
-### Add a subgraph
+### Manage subgraphs
 
 ```bash
+# Add a subgraph
 deno run --allow-all src/main.ts subgraph add <path> --name <name>
+
+# Activate a subgraph
+deno run --allow-all src/main.ts subgraph activate <name>
+
+# Deactivate a subgraph
+deno run --allow-all src/main.ts subgraph deactivate <name>
+
+# Remove a subgraph
+deno run --allow-all src/main.ts subgraph remove <name>
 ```
 
 ### Set up complete state

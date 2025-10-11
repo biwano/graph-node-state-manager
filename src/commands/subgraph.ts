@@ -2,6 +2,8 @@ import { Command } from "cliffy/command";
 import { DEFAULT_PROJECT_NAME, FOUNDRY_ROOT } from "../utils/constants.ts";
 import { subgraphAddTask } from "../tasks/subgraph_add.ts";
 import { subgraphRemoveTask } from "../tasks/subgraph_remove.ts";
+import { subgraphActivateTask } from "../tasks/subgraph_activate.ts";
+import { subgraphDeactivateTask } from "../tasks/subgraph_deactivate.ts";
 
 export const addCommand = new Command()
   .name("subgraph:add")
@@ -39,8 +41,36 @@ export const removeCommand = new Command()
     }
   });
 
+export const activateCommand = new Command()
+  .name("activate")
+  .description("Activate a subgraph")
+  .arguments("<name:string>")
+  .action(async (_options, name: string) => {
+    try {
+      await subgraphActivateTask(name);
+    } catch (error) {
+      console.error("Error activating subgraph:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
+export const deactivateCommand = new Command()
+  .name("deactivate")
+  .description("Deactivate a subgraph")
+  .arguments("<name:string>")
+  .action(async (_options, name: string) => {
+    try {
+      await subgraphDeactivateTask(name);
+    } catch (error) {
+      console.error("Error deactivating subgraph:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
 export const subgraphCommand = new Command()
   .name("subgraph")
   .description("Manage subgraphs")
   .command("add", addCommand)
-  .command("remove", removeCommand);
+  .command("remove", removeCommand)
+  .command("activate", activateCommand)
+  .command("deactivate", deactivateCommand);

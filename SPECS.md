@@ -31,6 +31,12 @@ The tasks are:
   - Removes project directory and all its files
   - Removes project entry from `config.json` registry
   - Removes registry file if it becomes empty
+- `subgraph:activate <name>`
+  - Activates a subgraph by setting `active: true` in the project configuration
+  - Updates the `config.json` file with the active status
+- `subgraph:deactivate <name>`
+  - Deactivates a subgraph by setting `active: false` in the project configuration
+  - Updates the `config.json` file with the active status
 - `task contracts:generate`
   - Reads project configurations from `config.json` registry
   - Iterates over all registered projects
