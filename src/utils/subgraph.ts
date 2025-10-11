@@ -1,5 +1,43 @@
 import { parse as parseYaml } from "std/yaml/mod.ts";
-import { Contract, Event, SubgraphData, SubgraphYaml } from "./types.ts";
+import { Contract, ContractEvent } from "./types.ts";
+
+// Strongly typed shape for subgraph.yaml
+export interface SubgraphYaml {
+  specVersion: string;
+  schema?: { file: string };
+  dataSources?: DataSource[];
+}
+
+export interface DataSource {
+  kind?: string;
+  name: string;
+  network?: string;
+  source: {
+    address?: string;
+    abi?: string;
+    startBlock?: number;
+  };
+  mapping: Mapping;
+}
+
+export interface Mapping {
+  kind?: string;
+  apiVersion?: string;
+  language?: string;
+  entities?: string[];
+  abis?: Array<{ name: string; file: string }>;
+  eventHandlers?: EventHandler[];
+  file?: string;
+}
+
+export interface EventHandler {
+  event: string;
+  handler: string;
+}
+
+export interface SubgraphData {
+  contracts: Contract[];
+}
 
 
 export async function parseSubgraph(subgraphPath: string): Promise<SubgraphData> {
@@ -15,7 +53,7 @@ export async function parseSubgraph(subgraphPath: string): Promise<SubgraphData>
         const mapping = source.mapping;
         if (mapping && mapping.eventHandlers && Array.isArray(mapping.eventHandlers)) {
           const contractName = source.name;
-          const events: Event[] = mapping.eventHandlers
+          const events: ContractEvent[] = mapping.eventHandlers
             .map((handler) => parseEventSignature(handler.event));
           
           if (events.length > 0) {
@@ -36,7 +74,7 @@ export async function parseSubgraph(subgraphPath: string): Promise<SubgraphData>
   }
 }
 
-function parseEventSignature(eventSignature: string): Event {
+function parseEventSignature(eventSignature: string): ContractEvent {
   const name = eventSignature.split('(')[0];
 
   const paramsMatch = eventSignature.match(/\(([^)]*)\)/);

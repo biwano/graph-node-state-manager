@@ -21,7 +21,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   graph-node:
-    image: graphprotocol/graph-node:v0.35.0
+    image: graphprotocol/graph-node:latest
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
