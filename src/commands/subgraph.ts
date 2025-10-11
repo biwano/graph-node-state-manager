@@ -28,13 +28,12 @@ export const removeCommand = new Command()
   .name("subgraph:remove")
   .description("Remove a foundry project from registry and filesystem")
   .arguments("[name:string]")
-  .option("-f, --force", "Force removal without confirmation", { default: false })
-  .action(async (options: { force: boolean }, name?: string) => {
+  .action(async (_options, name?: string) => {
     try {
       const projectName = name ?? DEFAULT_PROJECT_NAME;
       const projectPath = `${FOUNDRY_ROOT}/${projectName}`;
       
-      await subgraphRemoveTask(projectPath, projectName, options.force);
+      await subgraphRemoveTask(projectPath, projectName);
     } catch (error) {
       console.error("Error removing project:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);

@@ -29,9 +29,8 @@ export async function upsertProject(projectName: string, entry: Partial<ProjectC
   const cfg = await readConfig();
   const current = cfg[projectName] || { subgraph_path: "", contracts: [] };
   const merged: ProjectConfigEntry = {
-    subgraph_path: entry.subgraph_path ?? current.subgraph_path,
-    contracts: entry.contracts ?? current.contracts,
-    graphql_url: entry.graphql_url ?? current.graphql_url,
+    ...current,
+    ...entry,
   };
   cfg[projectName] = merged;
   await writeConfig(cfg);

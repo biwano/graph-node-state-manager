@@ -17,18 +17,19 @@ It is a CLI that can perform multiple tasks. It reads its config from a file cal
 
 The tasks are:
 - `subgraph:add <path> [-n <name>]`
-  - Creates a new foundry project using `forge init`
+  - Creates a new foundry project using `forge init --no-git`
   - Requires a `--subgraph` argument: path of the subgraph folder associated with the foundry project. The task checks that it corresponds to a properly formatted YAML file
   - Validates subgraph.yaml structure including required fields (specVersion, dataSources, etc.)
   - Validates data source configuration including event handlers
   - Takes a `--name` argument: name of the folder containing the foundry project (defaults to foundry)
   - Creates or updates a `config.json` registry file in the repository root
   - Registry is a map indexed by project name containing subgraph path
-- `subgraph:remove [<name>] [--force]` 
+  - Automatically activates the project
+  - Initializes foundry project without git submodules to avoid cluttering the main repository
+- `subgraph:remove [<name>]` 
   - Removes a foundry project from registry and filesystem
-  - Requires a `--name` argument: name of the project to remove
-  - Supports `--force` flag to skip confirmation prompt
-  - Removes project directory and all its files
+  - Takes a `--name` argument: name of the project to remove (defaults to "default")
+  - Removes project directory and all its files without confirmation
   - Removes project entry from `config.json` registry
   - Removes registry file if it becomes empty
 - `subgraph:activate <name>`
