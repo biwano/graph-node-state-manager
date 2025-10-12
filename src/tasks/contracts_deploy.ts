@@ -49,7 +49,6 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
   }
 
   const output = new TextDecoder().decode(stdout);
-  console.log(output);
 
   // Prefer parsing deployed addresses from stdout markers
   const deployedAddresses = parseDeployedAddressesFromStdout(output);

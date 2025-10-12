@@ -37,7 +37,7 @@ deno run --allow-all src/main.ts subgraph remove <name>
 ### Set up complete state
 
 ```bash
-deno run --allow-all src/main.ts set-state [event-files...]
+deno run --allow-all src/main.ts state set [event-files...]
 ```
 
 This command:

@@ -86,6 +86,26 @@ async function createSubgraph(projectName: string, cwd?: string): Promise<void> 
   console.log(new TextDecoder().decode(stdout));
 }
 
+async function runCodegen(cwd?: string): Promise<void> {
+  console.log(`🔧 Running graph codegen...`);
+  const codegenProcess = new Deno.Command("npx", {
+    args: [
+      "@graphprotocol/graph-cli",
+      "codegen",
+      SUBGRAPH_YAML_FILENAME,
+    ],
+    cwd: cwd,
+    ...DENO_COMMAND_OPTIONS,
+  });
+
+  const { code, stdout, stderr } = await codegenProcess.output();
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    throw new Error(`Failed to run codegen: ${errorText}`);
+  }
+  console.log(`✅ Codegen completed successfully`);
+}
+
 async function deploySubgraphVersion(projectName: string, cwd?: string): Promise<string> {
   const versionLabel = `v${Date.now()}`;
 
@@ -150,6 +170,7 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
   );
  
   // Deploy from subgraph directory
+  await runCodegen(subgraphPath);
   await createSubgraph(projectName, subgraphPath);
   await deploySubgraphVersion(projectName, subgraphPath);
   

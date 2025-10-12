@@ -60,7 +60,7 @@ async function runStateSetup(eventFiles: string[]): Promise<void> {
   console.log("🚀 Running state setup...");
   
   const process = new Deno.Command("deno", {
-    args: ["task", "run", "set-state", ...eventFiles],
+    args: ["task", "run", "state", "set", ...eventFiles],
     ...DENO_COMMAND_OPTIONS,
   });
   

@@ -65,12 +65,12 @@ The tasks are:
   - Files can use `$EVENT` to call the event command within their scripts
   - Supports multiple files as arguments
   - Logic implemented in `src/tasks/state_add.ts` following the task pattern
-- `set-state [files...]`
+- `state set [files...]`
   - Complete setup command: sets up anvil, graph node, and optionally executes event files
   - Performs: anvil setup (kill → start → generate → deploy) + graph setup (stop → wipe → start → deploy)
   - Then executes any provided event files from the `events/` directory
   - Uses existing task functions directly for better performance and error handling
-  - Logic implemented in `src/tasks/state.ts` with `setStateTask()` function following the task pattern
+  - Logic implemented in `src/tasks/state_set.ts` with `setStateTask()` function following the task pattern
 
 ## Configuration
 
