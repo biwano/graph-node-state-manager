@@ -23,7 +23,7 @@ async function removeVolume(volumeName: string): Promise<void> {
 }
 
 async function getDockerProjectName(): Promise<string[]> {
-  console.log("🔍 Extracting volume names from docker-compose.yml...");
+  console.debug("🔍 Extracting project name from docker compose...");
   
   const configProcess = new Deno.Command("docker", {
     args: ["compose", "config", "--format", "json"],

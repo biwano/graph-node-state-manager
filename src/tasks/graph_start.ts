@@ -14,7 +14,7 @@ export async function startGraphNodeTask(): Promise<void> {
     ...DENO_COMMAND_OPTIONS,
   });
 
-  const { code, stdout, stderr } = await dockerComposeProcess.output();
+  const { code, stderr } = await dockerComposeProcess.output();
 
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
@@ -24,6 +24,4 @@ export async function startGraphNodeTask(): Promise<void> {
   await waitForGraphNode();
 
   console.log("✅ Graph-node started");
-  console.log(new TextDecoder().decode(stdout));
-
 }

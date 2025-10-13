@@ -13,7 +13,7 @@ export async function stopGraphNodeTask(): Promise<void> {
     ...DENO_COMMAND_OPTIONS,
   });
 
-  const { code, stdout, stderr } = await dockerComposeProcess.output();
+  const { code, stderr } = await dockerComposeProcess.output();
 
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
@@ -21,5 +21,4 @@ export async function stopGraphNodeTask(): Promise<void> {
   }
 
   console.log("✅ Graph-node stopped");
-  console.log(new TextDecoder().decode(stdout));
 }

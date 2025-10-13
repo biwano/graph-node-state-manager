@@ -1,4 +1,4 @@
-import { SHELL } from "../utils/constants.ts";
+import { EVENT_SCRIPT, SHELL } from "../utils/constants.ts";
 
 export async function assertEventFilesExist(files: string[]): Promise<void> {
   for (const file of files) {
@@ -15,19 +15,6 @@ export async function assertEventFilesExist(files: string[]): Promise<void> {
   }
 }
 
-function getEventScript(): string {
-  // Get the binary name from the executable path
-  const executablePath = Deno.execPath();
-  const binaryName = executablePath.split('/').pop() || 'graph-node-state-manager';
-  
-  // If it's the global CLI binary, use the binary name directly
-  if (binaryName === 'graph-node-state-manager') {
-    return "graph-node-state-manager task event";
-  }
-  
-  // If it's running via deno, use deno task
-  return "deno task run task event";
-}
 
 export async function addStateTask(files: string[]): Promise<void> {
   if (files.length === 0) {
@@ -37,8 +24,6 @@ export async function addStateTask(files: string[]): Promise<void> {
 
   await assertEventFilesExist(files);
 
-  const eventScript = getEventScript();
-
   for (const file of files) {
     const eventFilePath = `events/${file}`;
     console.log(`🚀 Executing event file: ${eventFilePath}`);
@@ -46,15 +31,30 @@ export async function addStateTask(files: string[]): Promise<void> {
     const process = new Deno.Command(SHELL, {
       args: [eventFilePath],
       env: {
-        EVENT: eventScript,
+        EVENT: EVENT_SCRIPT,
       },
       stdout: "piped",
       stderr: "piped",
     });
 
-    const { code } = await process.output();
+    const { code, stdout, stderr } = await process.output();
     if (code !== 0) {
       console.error(`❌ Event file ${file} failed with exit code ${code}`);
+      
+      // Output stdout if there's any content
+      const stdoutText = new TextDecoder().decode(stdout);
+      if (stdoutText.trim()) {
+        console.log("📤 stdout:");
+        console.log(stdoutText);
+      }
+      
+      // Output stderr if there's any content
+      const stderrText = new TextDecoder().decode(stderr);
+      if (stderrText.trim()) {
+        console.log("📤 stderr:");
+        console.log(stderrText);
+      }
+      
       Deno.exit(1);
     }
     console.log(`✅ Event file ${file} completed successfully`);

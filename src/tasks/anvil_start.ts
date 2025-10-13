@@ -32,7 +32,7 @@ export async function startAnvilTask(): Promise<void> {
   };
 
   await waitForService(checkAnvil, {
-    serviceName: "anvil",
+    serviceName: "Anvil",
     maxRetries: 30,
     retryDelay: 1000
   });

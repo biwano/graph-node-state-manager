@@ -132,7 +132,7 @@ async function deploySubgraphVersion(projectName: string, cwd?: string): Promise
   
   const output = new TextDecoder().decode(stdout);
   console.log(`✅ Subgraph ${projectName} deployed successfully`);
-  console.log(output);
+  console.debug(output);
   
   // Extract IPFS hash from "Build completed" line
   // The output contains a line like "Build completed: QmUvX7Mi9KU72Rwa11SNY1Fo82iq8atXa4V7MqWtjyEqSD"
