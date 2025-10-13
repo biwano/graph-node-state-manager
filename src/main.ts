@@ -4,6 +4,7 @@ import { Command } from "cliffy/command";
 import { taskCommand } from "./commands/task.ts";
 import { subgraphCommand } from "./commands/subgraph.ts";
 import { stateCommand } from "./commands/state.ts";
+import { initCommand } from "./commands/init.ts";
 
 const main = new Command()
   .name("graph-node-state-manager")
@@ -12,6 +13,7 @@ const main = new Command()
   .command("subgraph", subgraphCommand)
   .command("task", taskCommand)
   .command("state", stateCommand)
+  .command("init", initCommand)
 
 if (import.meta.main) {
   await main.parse(Deno.args);

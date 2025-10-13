@@ -1,6 +1,8 @@
 import { Contract } from "./types.ts";
 import vento from "vento";
-import { join } from "std/path/mod.ts";
+import { CONTRACT_TEMPLATE } from "../templates/contract.ts";
+import { DEPLOY_SCRIPT_TEMPLATE } from "../templates/deploy_script.ts";
+export { DOCKER_COMPOSE_TEMPLATE } from "../templates/docker_compose.ts";
 
 export async function generateFakeContract(contract: Contract): Promise<string> {
   if (!contract.events || contract.events.length === 0) {
@@ -16,7 +18,7 @@ export async function generateFakeContract(contract: Contract): Promise<string> 
     return `    function ${funcName}(${params}) external {\n        emit ${event.name}(${emitArgs});\n    }`;
   });
 
-  return await renderWithVento("Contract.vto", {
+  return await renderWithVento(CONTRACT_TEMPLATE, {
     name: contract.name,
     eventDeclarations,
     functionsDeclarations,
@@ -54,15 +56,13 @@ export async function buildDeployScript(_projectName: string, contracts: Contrac
       instanceName: `inst${c.name}`,
     })),
   } as Record<string, unknown>;
-  return await renderWithVento("Deploy.s.vto", data);
+  return await renderWithVento(DEPLOY_SCRIPT_TEMPLATE, data);
 }
 
-export async function renderWithVento(templateName: string, data: Record<string, unknown>): Promise<string> {
+export async function renderWithVento(templateSource: string, data: Record<string, unknown>): Promise<string> {
   try {
     const env = vento();
-    const templatePath = join("./src/templates", templateName);
-    const template = await env.load(templatePath);
-    const result = await template(data);
+    const result = await env.runString(templateSource, data);
     return result.content;
   } catch (_e) {
     // Bubble up error to let caller decide fallback

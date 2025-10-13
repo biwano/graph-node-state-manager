@@ -48,6 +48,8 @@ The tasks are:
   - Generates contracts in `./{projectName}/src/` directory
 - `task contracts:deploy`
   - Deploys generated contracts to the local Anvil node using Foundry scripts
+- `deno task install`
+  - Installs the CLI as a global executable named `graph-node-state-manager`
 - `task anvil:start | task anvil:stop | task anvil:setup`
   - Manage Anvil lifecycle; `anvil:setup` stops any running instance, starts a new one, generates contracts, and deploys them
 - `task anvil:inspect <txHash>`

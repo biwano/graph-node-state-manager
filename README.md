@@ -14,6 +14,7 @@ A CLI tool for managing local blockchain state with subgraph integration. Genera
 ```bash
 git clone <repository-url>
 cd graph-node-state-manager
+deno task install   # installs as `graph-node-state-manager`
 ```
 
 ## Usage
@@ -38,6 +39,12 @@ deno run --allow-all src/main.ts subgraph remove <name>
 
 ```bash
 deno run --allow-all src/main.ts state set [event-files...]
+```
+
+Or, after installing:
+
+```bash
+graph-node-state-manager state set [event-files...]
 ```
 
 This command:
