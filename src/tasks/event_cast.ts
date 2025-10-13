@@ -15,6 +15,63 @@ function eventSignature(name: string, types: string[]): string {
 
 function validateArgFormat(type: string, value: string): string | null {
   const t = type.trim();
+  
+  // Handle array types
+  if (t.endsWith("[]")) {
+    const elementType = t.slice(0, -2);
+    // Parse array value - expect format like "[value1,value2,value3]" or "[]"
+    if (!/^\[.*\]$/.test(value)) {
+      return `invalid array format (expected [value1,value2,...] or [])`;
+    }
+    
+    // Extract array contents
+    const arrayContent = value.slice(1, -1).trim();
+    if (arrayContent === "") {
+      return null; // empty array is valid
+    }
+    
+    // Split by comma and validate each element
+    const elements = arrayContent.split(",").map(el => el.trim());
+    for (const element of elements) {
+      const error = validateArgFormat(elementType, element);
+      if (error) {
+        return `invalid array element: ${error}`;
+      }
+    }
+    return null;
+  }
+  
+  // Handle fixed-size arrays like uint256[3]
+  const fixedArrayMatch = t.match(/^(.+)\[(\d+)\]$/);
+  if (fixedArrayMatch) {
+    const elementType = fixedArrayMatch[1];
+    const expectedLength = parseInt(fixedArrayMatch[2], 10);
+    
+    // Parse array value
+    if (!/^\[.*\]$/.test(value)) {
+      return `invalid array format (expected [value1,value2,...])`;
+    }
+    
+    const arrayContent = value.slice(1, -1).trim();
+    if (arrayContent === "") {
+      return expectedLength === 0 ? null : `invalid array length (expected ${expectedLength} elements, got 0)`;
+    }
+    
+    const elements = arrayContent.split(",").map(el => el.trim());
+    if (elements.length !== expectedLength) {
+      return `invalid array length (expected ${expectedLength} elements, got ${elements.length})`;
+    }
+    
+    for (const element of elements) {
+      const error = validateArgFormat(elementType, element);
+      if (error) {
+        return `invalid array element: ${error}`;
+      }
+    }
+    return null;
+  }
+  
+  // Handle non-array types
   if (t === "address") {
     return /^0x[0-9a-fA-F]{40}$/.test(value) ? null : `invalid address (expected 0x-prefixed 40 hex chars)`;
   }
