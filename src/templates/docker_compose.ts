@@ -1,10 +1,13 @@
-export const DOCKER_COMPOSE_TEMPLATE = `services:
+export function generateDockerCompose(prefix: string): string {
+  const ipfsVol = `${prefix}-ipfs-data`;
+  const pgVol = `${prefix}-postgres-data`;
+  return `services:
   ipfs:
     image: ipfs/kubo:v0.30.0
     ports:
       - "5001:5001" # API
     volumes:
-      - gnsm-ipfs-data:/data/ipfs:Z
+      - ipfs-data:/data/ipfs:Z
 
   postgres:
     image: postgres:14-alpine
@@ -16,7 +19,7 @@ export const DOCKER_COMPOSE_TEMPLATE = `services:
     ports:
       - "5433:5432"
     volumes:
-      - gnsm-postgres-data:/var/lib/postgresql/data:Z
+      - postgres-data:/var/lib/postgresql/data:Z
     command:
       [
         "postgres",
@@ -48,12 +51,11 @@ export const DOCKER_COMPOSE_TEMPLATE = `services:
       GRAPH_LOG: info
 
 volumes:
-  gnsm-ipfs-data:
-    external: true
-    name: gnsm-ipfs-data
-  gnsm-postgres-data:
-    external: true
-    name: gnsm-postgres-data
+  ipfs-data:
+    name: ${ipfsVol}
+  postgres-data:
+    name: ${pgVol}
 `;
+}
 
 

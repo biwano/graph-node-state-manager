@@ -1,4 +1,5 @@
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+import { readConfig } from "../utils/config.ts";
 
 async function removeVolume(volumeName: string, displayName: string): Promise<void> {
   console.log(`🗑️  Removing ${displayName} data volume...`);
@@ -24,9 +25,10 @@ async function removeVolume(volumeName: string, displayName: string): Promise<vo
 
 export async function wipeGraphNodeTask(): Promise<void> {
   console.log("🧹 Wiping graph-node data...");
-
-  await removeVolume("gnsm-ipfs-data", "IPFS");
-  await removeVolume("gnsm-postgres-data", "Postgres");
+  const cfg = await readConfig();
+  const prefix = cfg.name || "gnsm";
+  await removeVolume(`${prefix}_ipfs-data`, "IPFS");
+  await removeVolume(`${prefix}_postgres-data`, "Postgres");
 
   console.log("✅ Graph-node data wiped successfully");
 }

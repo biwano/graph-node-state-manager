@@ -2,7 +2,6 @@ import { Contract } from "./types.ts";
 import vento from "vento";
 import { CONTRACT_TEMPLATE } from "../templates/contract.ts";
 import { DEPLOY_SCRIPT_TEMPLATE } from "../templates/deploy_script.ts";
-export { DOCKER_COMPOSE_TEMPLATE } from "../templates/docker_compose.ts";
 
 export async function generateFakeContract(contract: Contract): Promise<string> {
   if (!contract.events || contract.events.length === 0) {
