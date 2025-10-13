@@ -31,6 +31,6 @@ jobs:
     - name: Install subgraph dependencies
       run: |
         cd test/subgraph && npm install
-        
+
     - name: Run integration test
       run: deno task test
