@@ -183,6 +183,24 @@ async function queryGraphQL(): Promise<void> {
   console.log("✅ GraphQL validation completed");
 }
 
+async function stopServices(): Promise<void> {
+  console.log("🛑 Stopping services...");
+  
+  const process = new Deno.Command("deno", {
+    args: ["task", "cli", "state", "stop"],
+    ...DENO_COMMAND_OPTIONS,
+  });
+  
+  const { code, stderr } = await process.output();
+  
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    console.warn(`Warning: Failed to stop services: ${errorText}`);
+  } else {
+    console.log("✅ Services stopped");
+  }
+}
+
 async function cleanup(copiedFiles: string[]): Promise<void> {
   console.log("🧹 Cleaning up test files...");
   
@@ -215,6 +233,7 @@ async function main(): Promise<void> {
     console.error("❌ Integration test failed:", error instanceof Error ? error.message : String(error));
     Deno.exit(1);
   } finally {
+    await stopServices();
     await cleanup(copiedFiles);
   }
 }
