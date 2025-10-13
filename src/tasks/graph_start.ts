@@ -4,9 +4,13 @@ import { waitForGraphNode } from "../utils/graph-node.ts";
 export async function startGraphNodeTask(): Promise<void> {
   console.log("🚀 Starting graph-node with docker-compose...");
 
+  // Get the current working directory (where docker-compose.yml is located)
+  const cwd = Deno.cwd();
+
   // Start graph-node using docker-compose
   const dockerComposeProcess = new Deno.Command("docker", {
     args: ["compose", "up", "-d", "graph-node"],
+    cwd: cwd,
     ...DENO_COMMAND_OPTIONS,
   });
 

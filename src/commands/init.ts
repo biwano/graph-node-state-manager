@@ -15,12 +15,12 @@ export const initCommand = new Command()
     await Deno.writeTextFile(`${eventsDir}/sample`, SAMPLE_EVENT_TEMPLATE);
 
     // Write docker-compose.yml
-    const parts = dir.replace(/\\+/g, "/").split("/").filter(Boolean);
-    const prefix = parts[parts.length - 1] || "gnsm";
-    await Deno.writeTextFile(`${dir}/docker-compose.yml`, generateDockerCompose(prefix));
+    await Deno.writeTextFile(`${dir}/docker-compose.yml`, generateDockerCompose());
 
     // Write config
     const cfg = await readConfig();
+    const parts = dir.replace(/\\+/g, "/").split("/").filter(Boolean);
+    const prefix = parts[parts.length - 1] || "gnsm";
     cfg.name = prefix;
     await writeConfig(cfg);
 

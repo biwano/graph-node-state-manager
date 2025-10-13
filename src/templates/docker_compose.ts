@@ -1,6 +1,4 @@
-export function generateDockerCompose(prefix: string): string {
-  const ipfsVol = `${prefix}-ipfs-data`;
-  const pgVol = `${prefix}-postgres-data`;
+export function generateDockerCompose(): string {
   return `services:
   ipfs:
     image: ipfs/kubo:v0.30.0
@@ -52,9 +50,7 @@ export function generateDockerCompose(prefix: string): string {
 
 volumes:
   ipfs-data:
-    name: ${ipfsVol}
   postgres-data:
-    name: ${pgVol}
 `;
 }
 
