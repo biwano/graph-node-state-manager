@@ -4,7 +4,7 @@ export const DOCKER_COMPOSE_TEMPLATE = `services:
     ports:
       - "5001:5001" # API
     volumes:
-      - ipfs-data:/data/ipfs:Z
+      - gnsm-ipfs-data:/data/ipfs:Z
 
   postgres:
     image: postgres:14-alpine
@@ -16,7 +16,7 @@ export const DOCKER_COMPOSE_TEMPLATE = `services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data:Z
+      - gnsm-postgres-data:/var/lib/postgresql/data:Z
     command:
       [
         "postgres",
@@ -48,8 +48,12 @@ export const DOCKER_COMPOSE_TEMPLATE = `services:
       GRAPH_LOG: info
 
 volumes:
-  ipfs-data: {}
-  postgres-data: {}
+  gnsm-ipfs-data:
+    external: true
+    name: gnsm-ipfs-data
+  gnsm-postgres-data:
+    external: true
+    name: gnsm-postgres-data
 `;
 
 

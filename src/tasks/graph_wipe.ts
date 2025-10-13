@@ -24,9 +24,9 @@ async function removeVolume(volumeName: string, displayName: string): Promise<vo
 
 export async function wipeGraphNodeTask(): Promise<void> {
   console.log("🧹 Wiping graph-node data...");
-  
-  await removeVolume("graph-node-state-manager_ipfs-data", "IPFS");
-  await removeVolume("graph-node-state-manager_postgres-data", "Postgres");
+
+  await removeVolume("gnsm-ipfs-data", "IPFS");
+  await removeVolume("gnsm-postgres-data", "Postgres");
 
   console.log("✅ Graph-node data wiped successfully");
 }
