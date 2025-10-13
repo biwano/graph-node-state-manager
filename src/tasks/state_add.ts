@@ -38,11 +38,12 @@ export async function addStateTask(files: string[]): Promise<void> {
     });
 
     const { code, stdout, stderr } = await process.output();
+    const stdoutText = new TextDecoder().decode(stdout);
+
     if (code !== 0) {
       console.error(`❌ Event file ${file} failed with exit code ${code}`);
       
       // Output stdout if there's any content
-      const stdoutText = new TextDecoder().decode(stdout);
       if (stdoutText.trim()) {
         console.error("📤 stdout:");
         console.error(stdoutText);
@@ -56,6 +57,9 @@ export async function addStateTask(files: string[]): Promise<void> {
       }
       
       Deno.exit(1);
+    }
+    else {
+      console.debug(stdoutText);
     }
     console.info(`✅ Event file ${file} completed successfully`);
   }

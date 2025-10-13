@@ -50,8 +50,8 @@ export async function wipeGraphNodeTask(): Promise<void> {
   console.info("🧹 Wiping graph-node data...");
 
   const prefix = await getDockerProjectName();
-  await removeVolume(`${prefix}-ipfs-data`);
-  await removeVolume(`${prefix}-postgres-data`);
+  await removeVolume(`${prefix}_ipfs-data`);
+  await removeVolume(`${prefix}_postgres-data`);
 
 
   console.info("✅ Graph-node data wiped successfully");
