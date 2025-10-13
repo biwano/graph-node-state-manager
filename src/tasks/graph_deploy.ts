@@ -73,21 +73,20 @@ async function createSubgraph(projectName: string, cwd?: string): Promise<void> 
     ...DENO_COMMAND_OPTIONS,
   });
 
-  const { code, stdout, stderr } = await createProcess.output();
+  const { code, stderr } = await createProcess.output();
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
     if (!errorText.toLowerCase().includes("already exists")) {
       throw new Error(`Failed to create subgraph ${projectName}: ${errorText}`);
     }
-    console.info(`ℹ️  Subgraph ${projectName} already exists, continuing with deployment`);
+    console.warn(`ℹ️  Subgraph ${projectName} already exists, continuing with deployment`);
     return;
   }
-  console.info(`✅ Subgraph ${projectName} created successfully`);
-  console.debug(new TextDecoder().decode(stdout));
+  console.info(`✅ Subgraph ${projectName} created in graph-node successfully`);
 }
 
 async function runCodegen(cwd?: string): Promise<void> {
-  console.info(`🔧 Running graph codegen...`);
+  console.debug(`🔧 Running graph codegen...`);
   const codegenProcess = new Deno.Command("npx", {
     args: [
       "@graphprotocol/graph-cli",
@@ -103,13 +102,13 @@ async function runCodegen(cwd?: string): Promise<void> {
     const errorText = new TextDecoder().decode(stderr);
     throw new Error(`Failed to run codegen: ${errorText}`);
   }
-  console.info(`✅ Codegen completed successfully`);
+  console.debug(`✅ Codegen completed successfully`);
 }
 
 async function deploySubgraphVersion(projectName: string, cwd?: string): Promise<string> {
   const versionLabel = `v${Date.now()}`;
 
-  console.info(`🚀 Deploying subgraph: ${projectName} with version: ${versionLabel}`);
+  console.info(`🚀 Deploying ${projectName} in graph-node with version: ${versionLabel}`);
   const deployProcess = new Deno.Command("npx", {
     args: [
       "@graphprotocol/graph-cli",
@@ -127,11 +126,11 @@ async function deploySubgraphVersion(projectName: string, cwd?: string): Promise
   const { code, stdout, stderr } = await deployProcess.output();
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
-    throw new Error(`Failed to deploy subgraph ${projectName}: ${errorText}`);
+    throw new Error(`Failed to deploy subgraph ${projectName} in graph-node : ${errorText}`);
   }
   
   const output = new TextDecoder().decode(stdout);
-  console.info(`✅ Subgraph ${projectName} deployed successfully`);
+  console.info(`✅ Subgraph ${projectName} deployed successfully in graph-node `);
   console.debug(output);
   
   // Extract IPFS hash from "Build completed" line
@@ -144,13 +143,13 @@ async function deploySubgraphVersion(projectName: string, cwd?: string): Promise
   
   // Use IPFS hash as deployment ID
   const deploymentId = buildCompletedMatch[1];
-  console.info(`📝 Deployment ID (IPFS hash): ${deploymentId}`);
+  console.debug(`📝 Deployment ID (IPFS hash): ${deploymentId}`);
   const graphqlUrl = `http://localhost:8000/subgraphs/id/${deploymentId}`;
  
   
   // Save GraphQL URL
   await setGraphQLUrl(projectName, graphqlUrl);
-  console.info(`📝 GraphQL URL saved: ${graphqlUrl}`);
+  console.debug(`📝 GraphQL URL saved: ${graphqlUrl}`);
  
   return graphqlUrl;
 }
@@ -162,7 +161,7 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
     throw new Error(`${SUBGRAPH_YAML_FILENAME} not found at ${subgraphYamlPath}`);
   }
 
-  console.info(`🚀 Creating and deploying subgraph for project: ${projectName}`);
+  console.debug(`🚀 Creating and deploying subgraph for project: ${projectName}`);
 
   const { modified, originalContent } = await prepareSubgraphYamlWithDeployedAddresses(
     subgraphYamlPath,

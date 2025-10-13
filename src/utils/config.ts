@@ -26,12 +26,13 @@ export async function readConfig(): Promise<ProjectConfig> {
   if (!parsed || typeof parsed !== "object" || !("subgraphs" in parsed)) {
     throw new Error("Invalid config format: expected { name?: string, subgraphs: { ... } }");
   }
-  return { name: parsed.name, subgraphs: parsed.subgraphs || {} };
+  return { name: parsed.name, logLevel: parsed.logLevel, subgraphs: parsed.subgraphs || {} };
 }
 
 export async function writeConfig(config: ProjectConfig): Promise<void> {
   const normalized: ProjectConfig = {
     name: config.name,
+    logLevel: config.logLevel,
     subgraphs: config.subgraphs || {},
   };
   await Deno.writeTextFile(CONFIG_PATH, JSON.stringify(normalized, null, 2));

@@ -7,23 +7,16 @@ export async function configureLogging(): Promise<void> {
     
     switch (logLevel.toLowerCase()) {
       case "silent":
-        console.info = () => {};
-        console.warn = () => {};
         console.error = () => {};
-        break;
+        /* fallthrough */
       case "error":
-        console.info = () => {};
         console.warn = () => {};
-        // console.error remains active
-        break;
+        /* fallthrough */
       case "warn":
         console.info = () => {};
-        // console.warn and console.error remain active
-        break;
+        /* fallthrough */
       case "info":
-      default:
-        // All console methods remain active
-        break;
+        console.debug = () => {};
     }
   } catch (_error) {
     // If config can't be read, use default logging (all active)

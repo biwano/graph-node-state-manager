@@ -1,7 +1,7 @@
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
 async function removeVolume(volumeName: string): Promise<void> {
-  console.debug(`🗑️  Removing volume ${volumeName}...`);
+  console.debug(`🗑️ Removing volume ${volumeName}...`);
   
   const volumeProcess = new Deno.Command("docker", {
     args: ["volume", "rm", volumeName],
@@ -15,7 +15,7 @@ async function removeVolume(volumeName: string): Promise<void> {
     if (!errorText.toLowerCase().includes("no such volume")) {
       throw new Error(`Failed to remove volume ${volumeName}: ${errorText}`);
     }
-    console.debug(`ℹ️  Volume ${volumeName} not found (already removed)`);
+    console.debug(`ℹ️ Volume ${volumeName} not found (already removed)`);
   } else {
     console.debug(`✅ Volume ${volumeName} removed`);
     console.debug(new TextDecoder().decode(stdout));

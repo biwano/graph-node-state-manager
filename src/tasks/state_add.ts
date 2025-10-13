@@ -18,7 +18,7 @@ export async function assertEventFilesExist(files: string[]): Promise<void> {
 
 export async function addStateTask(files: string[]): Promise<void> {
   if (files.length === 0) {
-    console.error("No event files specified");
+    console.error("❌ No event files specified");
     Deno.exit(1);
   }
 

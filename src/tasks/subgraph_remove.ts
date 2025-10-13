@@ -3,7 +3,7 @@ import { removeProject } from "../utils/config.ts";
 
 export async function subgraphRemoveTask(projectDir: string, projectName: string): Promise<void> {
   if (!(await exists(projectDir))) {
-    console.warn(`Project directory '${projectDir}' not found. Removing from registry only.`);
+    console.warn(`⚠️ Project directory '${projectDir}' not found. Removing from registry only.`);
   } else {
     await Deno.remove(projectDir, { recursive: true });
     console.debug(`✅ Removed project directory: ${projectDir}`);

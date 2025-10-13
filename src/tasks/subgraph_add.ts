@@ -4,11 +4,11 @@ import { SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants
 import { upsertProject } from "../utils/config.ts";
 
 export async function subgraphAddTask(subgraphPath: string, projectDir: string, projectName: string): Promise<void> {
-  console.info(`Initializing foundry project at: ${projectDir}`);
+  console.info(`🔧 Initializing foundry project at: ${projectDir}`);
 
   // Validate subgraph YAML file
   const subgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
-  console.debug(`Validating subgraph YAML file: ${subgraphYamlPath}`);
+  console.debug(`🔍 Validating subgraph YAML file: ${subgraphYamlPath}`);
 
   const subgraphContent = await Deno.readTextFile(subgraphYamlPath);
   const subgraphData = parseYaml(subgraphContent) as Record<string, unknown>;
@@ -31,7 +31,7 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
   }
 
   await upsertProject(projectName, { subgraph_path: subgraphPath, active: true });
-  console.debug(`✅ Updated registry with project: ${projectName}`);
+  console.debug(`📝 Updated registry with project: ${projectName}`);
 
   console.info("✅ Foundry project initialized successfully!");
 }

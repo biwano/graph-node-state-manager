@@ -10,7 +10,7 @@ export async function generateForProjectTask(projectName: string, subgraphPath: 
   const resolvedSubgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
   const outputDir = `${outRoot}/${projectName}/src`;
 
-  console.info("🚀 Generating fake contracts for project: ${projectName}");
+  console.info(`🔧 Generating fake contracts for project: ${projectName}`);
 
   const subgraphData = await parseSubgraph(resolvedSubgraphYamlPath);
   console.debug(`Found ${subgraphData.contracts.length} contracts in subgraph`);

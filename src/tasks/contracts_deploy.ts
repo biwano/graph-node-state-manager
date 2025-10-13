@@ -55,7 +55,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
     await upsertContracts(projectName, deployedAddresses);
   }
   
-  console.info(`✅ Contracts deployed successfully for project: ${projectDir}.`);
+  console.info(`✅ Contracts deployed successfully for project: ${projectName}.`);
 }
 
 export async function deployAllProjectsTask(rpcUrl: string, privateKey: string): Promise<void> {

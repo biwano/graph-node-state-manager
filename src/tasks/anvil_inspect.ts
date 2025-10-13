@@ -14,7 +14,7 @@ export async function inspectTxTask(txHash: string): Promise<void> {
   if (json.error) {
     throw new Error(json.error.message || JSON.stringify(json.error));
   }
-  console.log(JSON.stringify(json.result, null, 2));
+  console.info(JSON.stringify(json.result, null, 2));
 }
 
 
