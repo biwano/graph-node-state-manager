@@ -10,7 +10,7 @@ import { deployAllGraphsTask } from "./graph_deploy.ts";
 import { addStateTask, assertEventFilesExist } from "./state_add.ts";
 
 export async function setStateTask(files: string[]): Promise<void> {
-  console.log("🚀 Starting set state command...");
+  console.info("🚀 Starting set state command...");
 
   await assertEventFilesExist(files);
 
@@ -35,5 +35,5 @@ export async function setStateTask(files: string[]): Promise<void> {
 
   await addStateTask(files);
   
-  console.log("🎉 State command completed successfully!");
+  console.info("🎉 State command completed successfully!");
 }

@@ -25,7 +25,6 @@ export const startCommand = new Command()
     try {
       await startAnvilTask();
       await startGraphNodeTask();
-      console.log("✅ Started Anvil and Graph Node");
     } catch (error) {
       console.error("Error in state start command:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -39,7 +38,7 @@ export const stopCommand = new Command()
     try {
       await killAnvilTask();
       await stopGraphNodeTask();
-      console.log("✅ Stopped Anvil and Graph Node");
+      console.info("✅ Stopped Anvil and Graph Node");
     } catch (error) {
       console.error("Error in state stop command:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);

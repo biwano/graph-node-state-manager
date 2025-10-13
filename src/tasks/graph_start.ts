@@ -2,7 +2,7 @@ import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 import { waitForGraphNode } from "../utils/graph-node.ts";
 
 export async function startGraphNodeTask(): Promise<void> {
-  console.log("🚀 Starting graph-node with docker-compose...");
+  console.info("🚀 Starting graph-node...");
 
   // Get the current working directory (where docker-compose.yml is located)
   const cwd = Deno.cwd();
@@ -23,5 +23,5 @@ export async function startGraphNodeTask(): Promise<void> {
   // Wait for graph-node to be ready
   await waitForGraphNode();
 
-  console.log("✅ Graph-node started");
+  console.info("✅ Graph-node started");
 }

@@ -26,7 +26,7 @@ export async function addStateTask(files: string[]): Promise<void> {
 
   for (const file of files) {
     const eventFilePath = `events/${file}`;
-    console.log(`🚀 Executing event file: ${eventFilePath}`);
+    console.debug(`🚀 Executing event file: ${eventFilePath}`);
     
     const process = new Deno.Command(SHELL, {
       args: [eventFilePath],
@@ -44,19 +44,19 @@ export async function addStateTask(files: string[]): Promise<void> {
       // Output stdout if there's any content
       const stdoutText = new TextDecoder().decode(stdout);
       if (stdoutText.trim()) {
-        console.log("📤 stdout:");
-        console.log(stdoutText);
+        console.error("📤 stdout:");
+        console.error(stdoutText);
       }
       
       // Output stderr if there's any content
       const stderrText = new TextDecoder().decode(stderr);
       if (stderrText.trim()) {
-        console.log("📤 stderr:");
-        console.log(stderrText);
+        console.error("📤 stderr:");
+        console.error(stderrText);
       }
       
       Deno.exit(1);
     }
-    console.log(`✅ Event file ${file} completed successfully`);
+    console.info(`✅ Event file ${file} completed successfully`);
   }
 }

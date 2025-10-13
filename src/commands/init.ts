@@ -24,7 +24,7 @@ export const initCommand = new Command()
     cfg.name = prefix;
     await writeConfig(cfg);
 
-    console.log(`✅ Scaffolded project at ${dir}`);
+    console.info(`✅ Scaffolded project at ${dir}`);
   });
 
 

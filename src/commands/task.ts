@@ -143,7 +143,6 @@ export const setupGraphCommand = new Command()
       // Deploy all subgraphs
       await deployAllGraphsTask();
       
-      console.log("✅ Graph setup completed successfully!");
     } catch (error) {
       console.error("Error during graph setup:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);

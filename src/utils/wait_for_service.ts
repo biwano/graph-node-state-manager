@@ -14,20 +14,20 @@ export async function waitForService(
     serviceName = "service"
   } = options;
 
-  console.log(`⏳ Waiting for ${serviceName} to be ready...`);
+  console.info(`⏳ Waiting for ${serviceName} to be ready...`);
 
   for (let i = 0; i < maxRetries; i++) {
     try {
       const isReady = await checkFunction();
       if (isReady) {
-        console.log(`✅ ${serviceName} is ready and accepting connections`);
+        console.info(`✅ ${serviceName} is ready and accepting connections`);
         return;
       }
     } catch {
       // Service not ready yet, continue waiting
     }
 
-    console.log(`⏳ ${serviceName} not ready yet, retrying in ${retryDelay}ms... (attempt ${i + 1}/${maxRetries})`);
+    console.debug(`⏳ ${serviceName} not ready yet, retrying in ${retryDelay}ms... (attempt ${i + 1}/${maxRetries})`);
     await new Promise(resolve => setTimeout(resolve, retryDelay));
   }
 

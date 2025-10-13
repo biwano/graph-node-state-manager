@@ -110,7 +110,7 @@ export async function buildEventCastCommand(
     ANVIL_DEFAULT_PRIVATE_KEY,
   ];
 
-  console.log(`cast ${args.join(" ")}`);
+  console.debug(`cast ${args.join(" ")}`);
 
   const cmd = new Deno.Command("cast", {
     args,
@@ -120,8 +120,8 @@ export async function buildEventCastCommand(
   if (code !== 0) {
     throw new Error(new TextDecoder().decode(stderr));
   }
-  console.log(new TextDecoder().decode(stdout));
-  console.log("✅ Event transaction sent successfully.");
+  console.debug(new TextDecoder().decode(stdout));
+  console.info("✅ Event transaction sent successfully.");
 }
 
 

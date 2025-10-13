@@ -1,7 +1,7 @@
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
 async function removeVolume(volumeName: string): Promise<void> {
-  console.log(`🗑️  Removing volume ${volumeName}...`);
+  console.debug(`🗑️  Removing volume ${volumeName}...`);
   
   const volumeProcess = new Deno.Command("docker", {
     args: ["volume", "rm", volumeName],
@@ -15,10 +15,10 @@ async function removeVolume(volumeName: string): Promise<void> {
     if (!errorText.toLowerCase().includes("no such volume")) {
       throw new Error(`Failed to remove volume ${volumeName}: ${errorText}`);
     }
-    console.log(`ℹ️  Volume ${volumeName} not found (already removed)`);
+    console.debug(`ℹ️  Volume ${volumeName} not found (already removed)`);
   } else {
-    console.log(`✅ Volume ${volumeName} removed`);
-    console.log(new TextDecoder().decode(stdout));
+    console.debug(`✅ Volume ${volumeName} removed`);
+    console.debug(new TextDecoder().decode(stdout));
   }
 }
 
@@ -47,12 +47,12 @@ async function getDockerProjectName(): Promise<string[]> {
 }
 
 export async function wipeGraphNodeTask(): Promise<void> {
-  console.log("🧹 Wiping graph-node data...");
+  console.info("🧹 Wiping graph-node data...");
 
   const prefix = await getDockerProjectName();
   await removeVolume(`${prefix}-ipfs-data`);
   await removeVolume(`${prefix}-postgres-data`);
 
 
-  console.log("✅ Graph-node data wiped successfully");
+  console.info("✅ Graph-node data wiped successfully");
 }

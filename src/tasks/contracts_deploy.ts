@@ -20,12 +20,10 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
   const scriptPath = `${projectDir}/script/Deploy.s.sol`;
 
   if (!(await exists(projectDir))) {
-    console.log(`Skipping: project directory not found: ${projectDir}.`);
-    return;
+    throw new Error(`Project directory not found: ${projectDir}`);
   }
   if (!(await exists(scriptPath))) {
-    console.log(`Skipping: deployment script not found: ${scriptPath}.`);
-    return;
+    throw new Error(`Deployment script not found: ${scriptPath}`);
   }
 
   const cmd = new Deno.Command("forge", {
@@ -57,7 +55,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
     await upsertContracts(projectName, deployedAddresses);
   }
   
-  console.log(`✅ Contracts deployed successfully for project: ${projectDir}.`);
+  console.info(`✅ Contracts deployed successfully for project: ${projectDir}.`);
 }
 
 export async function deployAllProjectsTask(rpcUrl: string, privateKey: string): Promise<void> {

@@ -9,7 +9,7 @@ export async function startAnvilTask(): Promise<void> {
   });
 
   anvilProcess.spawn().unref();
-  console.log("🚀 Starting anvil...");
+  console.info("🚀 Starting anvil...");
 
   // Wait for anvil to be ready by checking the RPC endpoint
   const checkAnvil = async (): Promise<boolean> => {

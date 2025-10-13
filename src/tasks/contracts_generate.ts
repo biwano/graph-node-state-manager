@@ -10,29 +10,29 @@ export async function generateForProjectTask(projectName: string, subgraphPath: 
   const resolvedSubgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
   const outputDir = `${outRoot}/${projectName}/src`;
 
-  console.log("🚀 Generating fake contracts for project: ${projectName}");
+  console.info("🚀 Generating fake contracts for project: ${projectName}");
 
   const subgraphData = await parseSubgraph(resolvedSubgraphYamlPath);
-  console.log(`Found ${subgraphData.contracts.length} contracts in subgraph`);
+  console.debug(`Found ${subgraphData.contracts.length} contracts in subgraph`);
 
   await ensureDir(outputDir);
   const scriptDir = join(`${outRoot}/${projectName}`, "script");
   await ensureDir(scriptDir);
 
   for (const contract of subgraphData.contracts) {
-    console.log(`Generating fake contract for: ${contract.name}`);
+    console.debug(`Generating fake contract for: ${contract.name}`);
     const contractCode = await generateFakeContract(contract);
     const outputPath = join(outputDir, `${contract.name}.sol`);
     await Deno.writeTextFile(outputPath, contractCode);
-    console.log(`  Created: ${outputPath}`);
+    console.debug(`  Created: ${outputPath}`);
   }
 
   const deployScriptPath = join(scriptDir, "Deploy.s.sol");
   const deployScript = await buildDeployScript(projectName, subgraphData.contracts);
   await Deno.writeTextFile(deployScriptPath, deployScript);
-  console.log(`Created deployment script: ${deployScriptPath}`);
+  console.debug(`Created deployment script: ${deployScriptPath}`);
 
-  console.log(`Fake contracts generated successfully for project: ${projectName}!`);
+  console.info(`✅ Fake contracts generated successfully for project: ${projectName}!`);
 }
 
 export async function generateAllProjectsTask(): Promise<void> {

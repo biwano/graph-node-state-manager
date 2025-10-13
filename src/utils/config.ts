@@ -15,6 +15,7 @@ export interface ProjectConfigEntry {
 
 export interface ProjectConfig {
   name?: string; // global prefix for volumes and project
+  logLevel?: string; // logging level: silent, error, warn, info
   subgraphs: Record<string, ProjectConfigEntry>;
 }
 
