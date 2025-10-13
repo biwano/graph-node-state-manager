@@ -1,5 +1,5 @@
 import { exists } from "std/fs/exists.ts";
-import { getValidConfig } from "../utils/config.ts";
+import { getActiveProjects } from "../utils/config.ts";
 import { upsertContracts } from "../utils/config.ts";
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
@@ -49,7 +49,6 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
   }
 
   const output = new TextDecoder().decode(stdout);
-  console.log(output);
 
   // Prefer parsing deployed addresses from stdout markers
   const deployedAddresses = parseDeployedAddressesFromStdout(output);
@@ -62,7 +61,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
 }
 
 export async function deployAllProjectsTask(rpcUrl: string, privateKey: string): Promise<void> {
-  const config = await getValidConfig();
+  const config = await getActiveProjects();
   const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {

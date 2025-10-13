@@ -30,7 +30,13 @@ function formatEventParameters(inputs: Array<{ name: string; type: string; index
 }
 
 function formatFunctionParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
-  return inputs.map((input) => `${input.type} ${input.name}`).join(", ");
+  return inputs.map((input) => {
+    // Add data location for array types in external functions
+    if (input.type.includes("[]")) {
+      return `${input.type} calldata ${input.name}`;
+    }
+    return `${input.type} ${input.name}`;
+  }).join(", ");
 }
 
 function formatEmitArguments(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {

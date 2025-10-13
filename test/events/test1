@@ -1,0 +1,4 @@
+# $EVENT subgraphName datasourceName eventName eventArgs...
+$EVENT default TimedContract StateReset 0xbFFab14C5f812d3200A333594fE86f8410848852
+$EVENT default TimedContract StateUpdated 0xbFFab14C5f812d3200A333594fE86f8410848852
+$EVENT default TimedContract StateReset 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707

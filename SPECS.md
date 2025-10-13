@@ -17,20 +17,27 @@ It is a CLI that can perform multiple tasks. It reads its config from a file cal
 
 The tasks are:
 - `subgraph:add <path> [-n <name>]`
-  - Creates a new foundry project using `forge init`
+  - Creates a new foundry project using `forge init --no-git`
   - Requires a `--subgraph` argument: path of the subgraph folder associated with the foundry project. The task checks that it corresponds to a properly formatted YAML file
   - Validates subgraph.yaml structure including required fields (specVersion, dataSources, etc.)
   - Validates data source configuration including event handlers
   - Takes a `--name` argument: name of the folder containing the foundry project (defaults to foundry)
   - Creates or updates a `config.json` registry file in the repository root
   - Registry is a map indexed by project name containing subgraph path
-- `subgraph:remove [<name>] [--force]` 
+  - Automatically activates the project
+  - Initializes foundry project without git submodules to avoid cluttering the main repository
+- `subgraph:remove [<name>]` 
   - Removes a foundry project from registry and filesystem
-  - Requires a `--name` argument: name of the project to remove
-  - Supports `--force` flag to skip confirmation prompt
-  - Removes project directory and all its files
+  - Takes a `--name` argument: name of the project to remove (defaults to "default")
+  - Removes project directory and all its files without confirmation
   - Removes project entry from `config.json` registry
   - Removes registry file if it becomes empty
+- `subgraph:activate <name>`
+  - Activates a subgraph by setting `active: true` in the project configuration
+  - Updates the `config.json` file with the active status
+- `subgraph:deactivate <name>`
+  - Deactivates a subgraph by setting `active: false` in the project configuration
+  - Updates the `config.json` file with the active status
 - `task contracts:generate`
   - Reads project configurations from `config.json` registry
   - Iterates over all registered projects
@@ -58,12 +65,12 @@ The tasks are:
   - Files can use `$EVENT` to call the event command within their scripts
   - Supports multiple files as arguments
   - Logic implemented in `src/tasks/state_add.ts` following the task pattern
-- `set-state [files...]`
+- `state set [files...]`
   - Complete setup command: sets up anvil, graph node, and optionally executes event files
   - Performs: anvil setup (kill → start → generate → deploy) + graph setup (stop → wipe → start → deploy)
   - Then executes any provided event files from the `events/` directory
   - Uses existing task functions directly for better performance and error handling
-  - Logic implemented in `src/tasks/state.ts` with `setStateTask()` function following the task pattern
+  - Logic implemented in `src/tasks/state_set.ts` with `setStateTask()` function following the task pattern
 
 ## Configuration
 

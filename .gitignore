@@ -1,7 +1,7 @@
-foundry
+foundry/**/*
 config.json
 node-data
 test/subgraph/node_modules
 test/subgraph/build
 test/subgraph/generated
-events
+/events

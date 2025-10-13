@@ -10,6 +10,7 @@ export interface ProjectConfigEntry {
   subgraph_path: string; 
   contracts?: ProjectConfigContract[];
   graphql_url?: string;
+  active?: boolean;
 }
 
 export type ProjectConfig = Record<string, ProjectConfigEntry>
@@ -28,9 +29,8 @@ export async function upsertProject(projectName: string, entry: Partial<ProjectC
   const cfg = await readConfig();
   const current = cfg[projectName] || { subgraph_path: "", contracts: [] };
   const merged: ProjectConfigEntry = {
-    subgraph_path: entry.subgraph_path ?? current.subgraph_path,
-    contracts: entry.contracts ?? current.contracts,
-    graphql_url: entry.graphql_url ?? current.graphql_url,
+    ...current,
+    ...entry,
   };
   cfg[projectName] = merged;
   await writeConfig(cfg);
@@ -74,21 +74,29 @@ export async function setGraphQLUrl(projectName: string, graphqlUrl: string): Pr
   await writeConfig(cfg);
 }
 
-export async function getValidConfig(): Promise<Record<string, { subgraph_path: string }>> {
+export async function getActiveProjects(): Promise<Record<string, { subgraph_path: string }>> {
   // Check if config exists
   if (!(await exists(CONFIG_PATH))) {
     throw new Error("No projects found in config. Run 'subgraph:add' first.");
   }
 
   const configContent = await Deno.readTextFile(CONFIG_PATH);
-  const config = JSON.parse(configContent) as Record<string, { subgraph_path: string }>;
+  const config = JSON.parse(configContent) as ProjectConfig;
   
-  const projectNames = Object.keys(config);
-  if (projectNames.length === 0) {
-    throw new Error("No projects found in config. Run 'subgraph:add' first.");
+  // Filter for active projects only
+  const activeProjects: Record<string, { subgraph_path: string }> = {};
+  for (const [projectName, projectConfig] of Object.entries(config)) {
+    if (projectConfig.active === true) {
+      activeProjects[projectName] = { subgraph_path: projectConfig.subgraph_path };
+    }
+  }
+  
+  const activeProjectNames = Object.keys(activeProjects);
+  if (activeProjectNames.length === 0) {
+    throw new Error("No active projects found in config. Run 'subgraph:activate' first.");
   }
 
-  return config;
+  return activeProjects;
 }
 
 

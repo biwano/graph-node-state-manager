@@ -1,8 +1,9 @@
 import { exists } from "std/fs/exists.ts";
 import { parse as yamlParse, stringify as yamlStringify } from "std/yaml/mod.ts";
 import { GRAPH_NODE_URL, IPFS_URL, SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
-import { getValidConfig } from "../utils/config.ts";
+import { getActiveProjects } from "../utils/config.ts";
 import { readConfig, setGraphQLUrl } from "../utils/config.ts";
+import { DataSource } from "../utils/subgraph.ts";
 
 async function prepareSubgraphYamlWithDeployedAddresses(
   subgraphYamlPath: string,
@@ -18,12 +19,28 @@ async function prepareSubgraphYamlWithDeployedAddresses(
 
   // Backup and maybe rewrite subgraph.yaml
   const originalContent = await Deno.readTextFile(subgraphYamlPath);
-  const doc = yamlParse(originalContent) as { dataSources?: Array<{ name?: string; source?: { address?: string } }> };
+  const doc = yamlParse(originalContent) as { 
+    dataSources?: Array<DataSource> 
+  };
   const dataSources = Array.isArray(doc.dataSources) ? doc.dataSources : [];
   let modified = false;
   for (const ds of dataSources) {
     const dsName = ds?.name as string | undefined;
     if (!dsName) continue;
+    
+    // Update network to mainnet
+    if (ds.network !== 'mainnet') {
+      ds.network = 'mainnet';
+      modified = true;
+    }
+    
+    // Update startBlock to 0 for local testing
+    if (ds.source && ds.source.startBlock && ds.source.startBlock > 0) {
+      ds.source.startBlock = 0;
+      modified = true;
+    }
+    
+    // Update contract addresses
     const newAddr = nameToAddress.get(dsName);
     if (newAddr && ds.source) {
       if (!ds.source.address || ds.source.address !== newAddr) {
@@ -37,8 +54,8 @@ async function prepareSubgraphYamlWithDeployedAddresses(
     await Deno.writeTextFile(subgraphYamlPath, tmpContent);
   }
   console.log(modified
-    ? `📝 ${SUBGRAPH_YAML_FILENAME} addresses temporarily updated from config`
-    : "ℹ️ No datasource address updates needed (no matching deployed contracts found)");
+    ? `📝 ${SUBGRAPH_YAML_FILENAME} temporarily updated (addresses from config, network: base-sepolia → mainnet, startBlock: → 0)`
+    : "ℹ️ No datasource updates needed (no matching deployed contracts found)");
 
   return { modified, originalContent };
 }
@@ -67,6 +84,26 @@ async function createSubgraph(projectName: string, cwd?: string): Promise<void> 
   }
   console.log(`✅ Subgraph ${projectName} created successfully`);
   console.log(new TextDecoder().decode(stdout));
+}
+
+async function runCodegen(cwd?: string): Promise<void> {
+  console.log(`🔧 Running graph codegen...`);
+  const codegenProcess = new Deno.Command("npx", {
+    args: [
+      "@graphprotocol/graph-cli",
+      "codegen",
+      SUBGRAPH_YAML_FILENAME,
+    ],
+    cwd: cwd,
+    ...DENO_COMMAND_OPTIONS,
+  });
+
+  const { code, stdout, stderr } = await codegenProcess.output();
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    throw new Error(`Failed to run codegen: ${errorText}`);
+  }
+  console.log(`✅ Codegen completed successfully`);
 }
 
 async function deploySubgraphVersion(projectName: string, cwd?: string): Promise<string> {
@@ -133,6 +170,7 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
   );
  
   // Deploy from subgraph directory
+  await runCodegen(subgraphPath);
   await createSubgraph(projectName, subgraphPath);
   await deploySubgraphVersion(projectName, subgraphPath);
   
@@ -145,7 +183,7 @@ async function deploySubgraph(subgraphPath: string, projectName: string): Promis
 export async function deployAllGraphsTask(): Promise<void> {
   console.log("🚀 Deploying all subgraphs to local graph-node...");
   
-  const config = await getValidConfig();
+  const config = await getActiveProjects();
   const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {

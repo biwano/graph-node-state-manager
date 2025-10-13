@@ -20,20 +20,20 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
   await ensureDir(projectDir);
 
   const initProcess = new Deno.Command("forge", {
-    args: ["init", ".", "--force"],
+    args: ["init", ".", "--force", "--no-git"],
     cwd: projectDir,
     ...DENO_COMMAND_OPTIONS,
   });
-  const { code, stdout, stderr } = await initProcess.output();
+  const { code, stderr } = await initProcess.output();
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
     throw new Error(`Failed to initialize foundry project: ${errorText}`);
   }
-  console.log("Foundry project initialized successfully!");
-  console.log(new TextDecoder().decode(stdout));
+  console.log("✅ Foundry project initialized successfully!");
 
-  await upsertProject(projectName, { subgraph_path: subgraphPath });
-  console.log(`Updated registry with project: ${projectName}`);
+  await upsertProject(projectName, { subgraph_path: subgraphPath, active: true });
+  console.log(`✅ Updated registry with project: ${projectName}`);
+  console.log(`✅ Project '${projectName}' activated automatically`);
 }
 
 
