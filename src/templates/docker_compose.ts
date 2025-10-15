@@ -1,7 +1,6 @@
-export function generateDockerCompose(): string {
-  return `services:
+export const DOCKER_COMPOSE_TEMPLATE = `services:
   ipfs:
-    image: ipfs/kubo:v0.30.0
+    image: ipfs/kubo:v0.38.1
     ports:
       - "5001:5001" # API
     volumes:
@@ -51,7 +50,5 @@ export function generateDockerCompose(): string {
 volumes:
   ipfs-data:
   postgres-data:
-`;
-}
-
+`
 

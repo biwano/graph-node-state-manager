@@ -1,5 +1,6 @@
 import { Command } from "cliffy/command";
-import { generateDockerCompose } from "../templates/docker_compose.ts";
+import { DOCKER_COMPOSE_TEMPLATE } from "../templates/docker_compose.ts";
+import { GITIGNORE_TEMPLATE } from "../templates/gitignore.ts";
 import { SAMPLE_EVENT_TEMPLATE } from "../templates/sample_event.ts";
 import { readConfig, writeConfig } from "../utils/config.ts";
 
@@ -15,7 +16,10 @@ export const initCommand = new Command()
     await Deno.writeTextFile(`${eventsDir}/sample`, SAMPLE_EVENT_TEMPLATE);
 
     // Write docker-compose.yml
-    await Deno.writeTextFile(`${dir}/docker-compose.yml`, generateDockerCompose());
+    await Deno.writeTextFile(`${dir}/docker-compose.yml`, DOCKER_COMPOSE_TEMPLATE);
+
+    // Write .gitignore
+    await Deno.writeTextFile(`${dir}/.gitignore`, GITIGNORE_TEMPLATE);
 
     // Write config
     const cfg = await readConfig();
