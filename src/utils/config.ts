@@ -76,6 +76,31 @@ export async function getDeployedAddress(projectName: string, contractName: stri
   return found ? found.address : null;
 }
 
+/**
+ * Print a summary of deployed subgraphs and their GraphQL URLs.
+ * Best-effort; does not throw if config is missing or unreadable.
+ */
+export async function logDeployedSubgraphsSummary(): Promise<void> {
+  try {
+    const cfg = await readConfig();
+    const subgraphs = cfg.subgraphs || {};
+    const deployed = Object.entries(subgraphs)
+      .map(([name, entry]) => ({ name, url: (entry as { graphql_url?: string }).graphql_url }))
+      .filter((x) => Boolean(x.url));
+
+    if (deployed.length > 0) {
+      console.info("📝 Deployed subgraphs (GraphQL URLs):");
+      for (const { name, url } of deployed) {
+        console.info(`  • ${name}: ${url}`);
+      }
+    } else {
+      console.warn("⚠️ No deployed subgraphs found in config (missing graphql_url).");
+    }
+  } catch (_error) {
+    // Ignore errors in summary logging
+  }
+}
+
 export async function setGraphQLUrl(projectName: string, graphqlUrl: string): Promise<void> {
   const cfg = await readConfig();
   const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };

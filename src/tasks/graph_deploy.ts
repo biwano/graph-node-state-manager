@@ -20,10 +20,14 @@ async function prepareSubgraphYamlWithDeployedAddresses(
   // Backup and maybe rewrite subgraph.yaml
   const originalContent = await Deno.readTextFile(subgraphYamlPath);
   const doc = yamlParse(originalContent) as { 
-    dataSources?: Array<DataSource> 
+    dataSources?: Array<DataSource>,
+    templates?: Array<DataSource>
   };
   const dataSources = Array.isArray(doc.dataSources) ? doc.dataSources : [];
+  const templates = Array.isArray(doc.templates) ? doc.templates : [];
   let modified = false;
+  
+  // Update data sources
   for (const ds of dataSources) {
     const dsName = ds?.name as string | undefined;
     if (!dsName) continue;
@@ -49,12 +53,20 @@ async function prepareSubgraphYamlWithDeployedAddresses(
       }
     }
   }
+  
+  // Update templates network to mainnet
+  for (const template of templates) {
+    if (template.network !== 'mainnet') {
+      template.network = 'mainnet';
+      modified = true;
+    }
+  }
   if (modified) {
     const tmpContent = yamlStringify(doc);
     await Deno.writeTextFile(subgraphYamlPath, tmpContent);
   }
   console.debug(modified
-    ? `📝 ${SUBGRAPH_YAML_FILENAME} temporarily updated (addresses from config, network: base-sepolia → mainnet, startBlock: → 0)`
+    ? `📝 ${SUBGRAPH_YAML_FILENAME} temporarily updated (addresses from config, network: → mainnet, startBlock: → 0)`
     : "ℹ️ No datasource updates needed (no matching deployed contracts found)");
 
   return { modified, originalContent };

@@ -8,6 +8,7 @@ import { wipeGraphNodeTask } from "./graph_wipe.ts";
 import { startGraphNodeTask } from "./graph_start.ts";
 import { deployAllGraphsTask } from "./graph_deploy.ts";
 import { addStateTask, assertEventFilesExist } from "./state_add.ts";
+import { logDeployedSubgraphsSummary } from "../utils/config.ts";
 
 export async function setStateTask(files: string[]): Promise<void> {
   console.info("🚀 Starting set state command...");
@@ -35,5 +36,8 @@ export async function setStateTask(files: string[]): Promise<void> {
 
   await addStateTask(files);
   
+  // Print deployed projects and their GraphQL URLs
+  await logDeployedSubgraphsSummary();
+
   console.info("🎉 State command completed successfully!");
 }

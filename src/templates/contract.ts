@@ -7,6 +7,9 @@ pragma solidity ^0.8.20;
  * Generated from subgraph definition
  */
 contract {{ name }} {
+{{ for s of structDeclarations }}
+{{ s }}
+{{ /for }}
 {{ for e of eventDeclarations }}
 {{ e }}
 {{ /for }}

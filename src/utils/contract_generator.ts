@@ -7,6 +7,21 @@ export async function generateFakeContract(contract: Contract): Promise<string> 
   if (!contract.events || contract.events.length === 0) {
     throw new Error(`No events found for contract '${contract.name}'`);
   }
+  
+  // Collect all struct types needed
+  const structTypes = new Set<string>();
+  for (const event of contract.events) {
+    for (const input of event.inputs) {
+      if (input.type.includes('Struct')) {
+        structTypes.add(input.type);
+      }
+    }
+  }
+  
+  const structDeclarations = Array.from(structTypes).map(structType => 
+    `    struct ${structType} {\n        uint256[] tokenIds;\n        uint256 amount;\n        string projectId;\n        address beneficiary;\n        string beneficiaryName;\n        string beneficiaryPostalCode;\n        string retirementMessage;\n        string retirementMetadata;\n        uint256 timestamp;\n        uint256 totalVintageQuantity;\n    }`
+  );
+  
   const eventDeclarations = contract.events.map(e => `    event ${e.name}(${formatEventParameters(e.inputs)});`);
 
   const functionsDeclarations = contract.events.map((e, index) => {
@@ -19,6 +34,7 @@ export async function generateFakeContract(contract: Contract): Promise<string> 
 
   return await renderWithVento(CONTRACT_TEMPLATE, {
     name: contract.name,
+    structDeclarations,
     eventDeclarations,
     functionsDeclarations,
   });
@@ -32,8 +48,8 @@ function formatEventParameters(inputs: Array<{ name: string; type: string; index
 
 function formatFunctionParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
   return inputs.map((input) => {
-    // Add data location for array types in external functions
-    if (input.type.includes("[]")) {
+    // Add data location for reference types in external functions
+    if (input.type.includes("[]") || input.type === "string" || input.type.startsWith("Struct")) {
       return `${input.type} calldata ${input.name}`;
     }
     return `${input.type} ${input.name}`;
