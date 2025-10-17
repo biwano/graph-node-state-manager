@@ -30,7 +30,7 @@ export async function generateForProjectTask(projectName: string, subgraphPath: 
   }
 
   // Generate one deploy script per data source contract
-  for (const contract of subgraphData.dataSources) {
+  for (const contract of allContracts) {
     const deployScriptPath = join(scriptDir, `Deploy${contract.name}.s.sol`);
     const deployScript = await buildDeployScript(projectName, [contract]);
     await Deno.writeTextFile(deployScriptPath, deployScript);

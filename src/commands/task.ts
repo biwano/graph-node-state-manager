@@ -2,6 +2,7 @@ import { Command } from "cliffy/command";
 import { killAnvilTask } from "../tasks/anvil_kill.ts";
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
 import { deployAllProjectsTask } from "../tasks/contracts_deploy.ts";
+import { deployTemplateTask } from "../tasks/contracts_deploy_template.ts";
 import { startAnvilTask } from "../tasks/anvil_start.ts";
 import { startGraphNodeTask } from "../tasks/graph_start.ts";
 import { stopGraphNodeTask } from "../tasks/graph_stop.ts";
@@ -70,9 +71,22 @@ export const deployCommand = new Command()
   .description("Deploy generated fake contracts on the local Anvil fork using Foundry script")
   .action(async () => {
     try {
-      await deployAllProjectsTask(ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY);
+      await deployAllProjectsTask();
     } catch (error) {
       console.error("Error deploying fakes:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
+export const deployTemplateCommand = new Command()
+  .name("contracts:deploy_template")
+  .description("Deploy a template contract with a custom alias")
+  .arguments("<project:string> <template:string> <alias:string>")
+  .action(async (_options, project: string, template: string, alias: string) => {
+    try {
+      await deployTemplateTask(project, template, alias);
+    } catch (error) {
+      console.error("Error deploying template:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
     }
   });
@@ -198,6 +212,7 @@ export const taskCommand = new Command()
   .command("anvil:inspect", anvilInspectCommand)
   .command("contracts:generate", generateCommand)
   .command("contracts:deploy", deployCommand)
+  .command("contracts:deploy_template", deployTemplateCommand)
   .command("graph:start", startGraphCommand)
   .command("graph:stop", stopGraphCommand)
   .command("graph:wipe", wipeGraphCommand)
