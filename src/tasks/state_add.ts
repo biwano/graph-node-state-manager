@@ -32,7 +32,7 @@ export async function addStateTask(files: string[]): Promise<void> {
       args: [eventFilePath],
       env: {
         EVENT: EVENT_SCRIPT,
-        TEMPLATE: DEPLOY_TEMPLATE_SCRIPT,
+        DEPLOY_TEMPLATE: DEPLOY_TEMPLATE_SCRIPT,
       },
       stdout: "piped",
       stderr: "piped",

@@ -149,4 +149,13 @@ export async function getActiveProjects(): Promise<Record<string, { subgraph_pat
   return activeProjects;
 }
 
+export async function getProjectConfig(projectName: string): Promise<ProjectConfigEntry> {
+  const config = await readConfig();
+  const knownProjects = Object.keys(config.subgraphs);
+  if (!config.subgraphs[projectName]) {
+    throw new Error(`Unknown project '${projectName}'. Known projects: ${knownProjects.join(", ")}`);
+  }
+  return config.subgraphs[projectName];
+}
+
 

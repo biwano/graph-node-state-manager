@@ -1,5 +1,5 @@
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
-import { getActiveProjects } from "../utils/config.ts";
+import { getProjectConfig } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
@@ -109,19 +109,25 @@ export async function buildEventCastCommand(
   eventName: string,
   eventArgs: string[],
 ): Promise<void> {
-  const config = await getActiveProjects();
-  const knownProjects = Object.keys(config);
-  if (!config[projectName]) {
-    throw new Error(`Unknown project '${projectName}'. Known projects: ${knownProjects.join(", ")}`);
+  const projectConfig = await getProjectConfig(projectName);
+  if (!projectConfig || !projectConfig.contracts) {
+    throw new Error(`No contracts found for project '${projectName}'. Deploy contracts first.`);
   }
 
-  const subgraphPath = config[projectName].subgraph_path;
+  // Find the contract by alias
+  const contractEntry = projectConfig.contracts[alias];
+  if (!contractEntry) {
+    const knownAliases = Object.keys(projectConfig.contracts).join(", ");
+    throw new Error(`Unknown contract alias '${alias}'. Known aliases: ${knownAliases}`);
+  }
+
+  // Get contract details from subgraph using the contractName
+  const subgraphPath = projectConfig.subgraph_path;
   const { dataSources, templates } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
   const contracts = [...dataSources, ...templates];
-  const contract = contracts.find((c) => c.name === alias || c.name === alias);
+  const contract = contracts.find((c) => c.name === contractEntry.contractName);
   if (!contract) {
-    const knownDatasources = contracts.map((c) => c.name).join(", ");
-    throw new Error(`Unknown datasource alias '${alias}'. Known datasources: ${knownDatasources}`);
+    throw new Error(`Contract '${contractEntry.contractName}' not found in subgraph definition`);
   }
 
   const event = contract.events.find((e) => e.name === eventName);

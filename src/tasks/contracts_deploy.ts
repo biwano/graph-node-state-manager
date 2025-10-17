@@ -1,5 +1,5 @@
 import { exists } from "std/fs/exists.ts";
-import { getActiveProjects } from "../utils/config.ts";
+import { getActiveProjects, getProjectConfig } from "../utils/config.ts";
 import { clearContracts } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
@@ -17,8 +17,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
   console.debug(`🧹 Cleared existing contracts from config for project: ${projectName}`);
 
   // Get the subgraph path to determine which contracts are data sources
-  const config = await getActiveProjects();
-  const projectConfig = config[projectName];
+  const projectConfig = await getProjectConfig(projectName);
   const subgraphPath = projectConfig.subgraph_path;
   const subgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
   
