@@ -68,6 +68,14 @@ export async function upsertContracts(projectName: string, addresses: Record<str
   await writeConfig(cfg);
 }
 
+export async function clearContracts(projectName: string): Promise<void> {
+  const cfg = await readConfig();
+  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };
+  current.contracts = [];
+  cfg.subgraphs[projectName] = current;
+  await writeConfig(cfg);
+}
+
 export async function getDeployedAddress(projectName: string, contractName: string): Promise<string | null> {
   const cfg = await readConfig();
   const entry = cfg.subgraphs[projectName];

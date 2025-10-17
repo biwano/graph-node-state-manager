@@ -37,7 +37,8 @@ export interface EventHandler {
 }
 
 export interface SubgraphData {
-  contracts: Contract[];
+  dataSources: Contract[];
+  templates: Contract[];
 }
 
 
@@ -46,21 +47,22 @@ export async function parseSubgraph(subgraphPath: string): Promise<SubgraphData>
     const subgraphContent = await Deno.readTextFile(subgraphPath);
     const subgraph = parseYaml(subgraphContent) as SubgraphYaml;
     
-    const contracts: Contract[] = [];
+    const dataSources: Contract[] = [];
+    const templates: Contract[] = [];
     
     // Parse data sources from subgraph
     if (subgraph.dataSources && Array.isArray(subgraph.dataSources)) {
       const dataSourceContracts = parseDataSources(subgraph.dataSources, false);
-      contracts.push(...dataSourceContracts);
+      dataSources.push(...dataSourceContracts);
     }
     
     // Parse templates from subgraph
     if (subgraph.templates && Array.isArray(subgraph.templates)) {
       const templateContracts = parseDataSources(subgraph.templates, true);
-      contracts.push(...templateContracts);
+      templates.push(...templateContracts);
     }
     
-    return { contracts };
+    return { dataSources, templates };
     
   } catch (error) {
     throw new Error(`Failed to parse subgraph: ${error instanceof Error ? error.message : String(error)}`);
@@ -83,7 +85,8 @@ function parseDataSources(sources: DataSource[], isTemplate: boolean): Contract[
           address: isTemplate 
             ? "0x0000000000000000000000000000000000000000" // Templates don't have fixed addresses
             : (source.source.address || "0x0000000000000000000000000000000000000000"),
-          events: events
+          events: events,
+          type: isTemplate ? "template" : "datasource"
         });
       }
     }
@@ -147,7 +150,7 @@ function parseEventSignature(eventSignature: string, dataSourceName: string): Co
   const inputs: Array<{ name: string; type: string; indexed?: boolean }> = [];
   
   // Split by comma, but only when not inside parentheses
-  const params = splitByCommaIgnoringNestedParens(paramsString);
+   const params = splitByCommaIgnoringNestedParens(paramsString);
 
   let argIndex = 0;
   for (const param of params) {
