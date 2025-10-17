@@ -3,6 +3,8 @@ import { getProjectConfig } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
+import { cliLog } from "../utils/logging.ts";
+import { mineAnvilBlocks } from "../utils/anvil.ts";
 
 function capitalize(text: string): string {
   return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
@@ -10,6 +12,16 @@ function capitalize(text: string): string {
 
 function eventSignature(name: string, types: string[]): string {
   return `${name}(${types.join(",")})`;
+}
+
+function extractTransactionHash(output: string): string {
+  // Look for "transactionHash" followed by spaces and a 64-character hex string
+  const txHashMatch = output.match(/transactionHash\s+(0x[a-fA-F0-9]{64})/i);
+  if (txHashMatch) {
+    return txHashMatch[1];
+  }
+  
+  throw new Error(`Could not extract transaction hash from output: ${output}`);
 }
 
 
@@ -101,13 +113,13 @@ function validateArgFormat(type: string, value: string): string | null {
   return null; // other solidity types not strictly validated here
 }
 
-// getDeployedAddress now provided by utils/config
 
-export async function buildEventCastCommand(
+export async function castEvent(
   projectName: string,
   alias: string,
   eventName: string,
   eventArgs: string[],
+  shouldMine: boolean = true,
 ): Promise<void> {
   const projectConfig = await getProjectConfig(projectName);
   if (!projectConfig || !projectConfig.contracts) {
@@ -141,14 +153,14 @@ export async function buildEventCastCommand(
   const expectedTypes = event.inputs.map((i) => i.type);
   if (eventArgs.length !== expectedTypes.length) {
     const sig = eventSignature(event.name, expectedTypes);
-    throw new Error(`Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}`);
+    throw new Error(`Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}. Passed arguments: [${eventArgs.join(", ")}]`);
   }
 
   for (let i = 0; i < expectedTypes.length; i++) {
     const err = validateArgFormat(expectedTypes[i], eventArgs[i]);
     if (err) {
       const sig = eventSignature(event.name, expectedTypes);
-      throw new Error(`Invalid argument #${i + 1} ('${event.inputs[i].name}'): ${err}. Signature: ${sig}`);
+      throw new Error(`Invalid argument #${i + 1} ('${event.inputs[i].name}'): ${err}. Signature: ${sig}. passed : ${eventArgs[i]}`);
     }
   }
 
@@ -183,8 +195,18 @@ export async function buildEventCastCommand(
   if (code !== 0) {
     throw new Error(new TextDecoder().decode(stderr));
   }
-  console.debug(new TextDecoder().decode(stdout));
+  const output = new TextDecoder().decode(stdout);
+  console.debug(output);
   console.info("✅ Event transaction sent successfully.");
+ 
+  const txHash = extractTransactionHash(output);
+  cliLog(txHash);
+
+  // Mine the transaction to ensure it's included in a block (unless disabled)
+  if (shouldMine) {
+    await mineAnvilBlocks(1);
+  }
+
 }
 
 

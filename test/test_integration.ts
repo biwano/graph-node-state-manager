@@ -108,7 +108,7 @@ function normalizeResponse(response: GraphQLResponse): GraphQLResponse {
   return normalized;
 }
 
-async function loadExpectedResponse(): Promise<any> {
+async function loadExpectedResponse(): Promise<unknown> {
   const fixturePath = "test/fixtures/expected_graphql_response.json";
   const content = await Deno.readTextFile(fixturePath);
   return JSON.parse(content);

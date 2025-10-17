@@ -1,19 +1,18 @@
 import { Command } from "cliffy/command";
 import { killAnvilTask } from "../tasks/anvil_kill.ts";
-import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
-import { deployAllProjectsTask } from "../tasks/contracts_deploy.ts";
+import { deployAllProjectsContractsTask } from "../tasks/contracts_deploy.ts";
 import { deployTemplateTask } from "../tasks/contracts_deploy_template.ts";
-import { getDeployedAddress } from "../utils/config.ts";
 import { startAnvilTask } from "../tasks/anvil_start.ts";
 import { startGraphNodeTask } from "../tasks/graph_start.ts";
 import { stopGraphNodeTask } from "../tasks/graph_stop.ts";
 import { wipeGraphNodeTask } from "../tasks/graph_wipe.ts";
 import { deployAllGraphsTask } from "../tasks/graph_deploy.ts";
-import { buildEventCastCommand } from "../tasks/event_cast.ts";
+import { castEvent } from "../tasks/event_cast.ts";
 import { generateAllProjectsTask } from "../tasks/contracts_generate.ts";
 import { inspectTxTask } from "../tasks/anvil_inspect.ts";
 import { addStateTask } from "../tasks/state_add.ts";
 import { cliLog } from "../utils/logging.ts";
+import { mineAnvilBlocks } from "../utils/anvil.ts";
 
 export const killAnvilCommand = new Command()
   .name("anvil:stop")
@@ -48,9 +47,23 @@ export const anvilSetupCommand = new Command()
       await killAnvilTask();
       await startAnvilTask();
       await generateAllProjectsTask();
-      await deployAllProjectsTask();
+      await deployAllProjectsContractsTask();
     } catch (error) {
       console.error("Error during anvil setup:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
+export const anvilMineCommand = new Command()
+  .name("anvil:mine")
+  .description("Mine one or more blocks on the local anvil node")
+  .arguments("[blocks:number]")
+  .action(async (_options, blocks: number = 1) => {
+    try {
+      await mineAnvilBlocks(blocks);
+      console.info(`✅ Mined ${blocks} block(s) successfully`);
+    } catch (error) {
+      console.error("Error mining blocks:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
     }
   });
@@ -73,7 +86,7 @@ export const deployCommand = new Command()
   .description("Deploy generated fake contracts on the local Anvil fork using Foundry script")
   .action(async () => {
     try {
-      await deployAllProjectsTask();
+      await deployAllProjectsContractsTask();
     } catch (error) {
       console.error("Error deploying fakes:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -171,9 +184,10 @@ export const eventCommand = new Command()
   .name("event")
   .arguments("<project:string> <alias:string> <event:string> [args...:string]")
   .description("Generate a cast send command for a project's contract alias event")
-  .action(async (_options, project: string, alias: string, event: string, ...args: string[]) => {
+  .option("--no-mine", "Don't mine blocks after sending the transaction")
+  .action(async (options, project: string, alias: string, event: string, ...args: string[]) => {
     try {
-      await buildEventCastCommand(project, alias, event, args);
+      await castEvent(project, alias, event, args, !options.noMine);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -213,6 +227,7 @@ export const taskCommand = new Command()
   .command("anvil:start", startAnvilCommand)
   .command("anvil:stop", killAnvilCommand)
   .command("anvil:setup", anvilSetupCommand)
+  .command("anvil:mine", anvilMineCommand)
   .command("anvil:inspect", anvilInspectCommand)
   .command("contracts:generate", generateCommand)
   .command("contracts:deploy", deployCommand)

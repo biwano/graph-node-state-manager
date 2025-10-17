@@ -3,11 +3,11 @@ import { getActiveProjects, getProjectConfig } from "../utils/config.ts";
 import { clearContracts } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
-import { deployScriptAndRecord } from "./contracts_deploy_template.ts";
+import { deployContract } from "./contracts_deploy_template.ts";
 
 
 
-export async function deployForProjectTask(projectName: string, projectDir: string): Promise<void> {
+export async function deployProjectContractsTask(projectName: string, projectDir: string): Promise<void> {
   if (!(await exists(projectDir))) {
     throw new Error(`Project directory not found: ${projectDir}`);
   }
@@ -36,7 +36,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
 
     console.debug(`Deploying contract: ${contract.name}`);
     try {
-      await deployScriptAndRecord(projectName, contract.name, contract.name);
+      await deployContract(projectName, contract.name, contract.name);
     } catch (e) {
       console.error(`Failed to deploy ${contract.name}:`, e instanceof Error ? e.message : String(e));
       continue;
@@ -46,13 +46,13 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
   console.info(`✅ Data source contracts deployed successfully for project: ${projectName}.`);
 }
 
-export async function deployAllProjectsTask(): Promise<void> {
+export async function deployAllProjectsContractsTask(): Promise<void> {
   const config = await getActiveProjects();
   const projectNames = Object.keys(config);
 
   for (const projectName of projectNames) {
     const projectDir = `./foundry/${projectName}`;
-    await deployForProjectTask(projectName, projectDir);
+    await deployProjectContractsTask(projectName, projectDir);
   }
 }
 

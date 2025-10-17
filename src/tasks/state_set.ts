@@ -1,8 +1,7 @@
 import { killAnvilTask } from "./anvil_kill.ts";
 import { startAnvilTask } from "./anvil_start.ts";
 import { generateAllProjectsTask } from "./contracts_generate.ts";
-import { deployAllProjectsTask } from "./contracts_deploy.ts";
-import { ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY } from "../utils/constants.ts";
+import { deployAllProjectsContractsTask } from "./contracts_deploy.ts";
 import { stopGraphNodeTask } from "./graph_stop.ts";
 import { wipeGraphNodeTask } from "./graph_wipe.ts";
 import { startGraphNodeTask } from "./graph_start.ts";
@@ -18,7 +17,7 @@ export async function setStateTask(files: string[]): Promise<void> {
   await Promise.all([
     (async () => {
       await killAnvilTask();
-      await startAnvilTask();
+      await startAnvilTask(true);
     })(),
     generateAllProjectsTask(),
     (async () => {
@@ -27,7 +26,7 @@ export async function setStateTask(files: string[]): Promise<void> {
     })()])
 
   await Promise.all([
-    deployAllProjectsTask(ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY),
+    deployAllProjectsContractsTask(),
     (async () => {
       await startGraphNodeTask();
       await deployAllGraphsTask();

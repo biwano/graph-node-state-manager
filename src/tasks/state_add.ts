@@ -63,5 +63,6 @@ export async function addStateTask(files: string[]): Promise<void> {
       console.debug(stdoutText);
     }
     console.info(`✅ Event file ${file} completed successfully`);
+    
   }
 }

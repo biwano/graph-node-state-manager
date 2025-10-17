@@ -1,9 +1,6 @@
 import { exists } from "std/fs/exists.ts";
-import { getActiveProjects } from "../utils/config.ts";
 import { upsertContract } from "../utils/config.ts";
 import { DENO_COMMAND_OPTIONS, ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
-import { parseSubgraph } from "../utils/subgraph.ts";
-import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 
 export function parseDeployedAddressFromStdout(output: string): string {
   const lines = output.split('\n');
@@ -22,7 +19,7 @@ export function parseDeployedAddressFromStdout(output: string): string {
  * address from stdout and records it in the config. If a nameKey is
  * provided, the address will be saved under that key.
  */
-export async function deployScriptAndRecord(
+export async function deployContract(
   projectName: string,
   contractName: string,
   alias?: string,
@@ -61,6 +58,7 @@ export async function deployScriptAndRecord(
   }
   const finalAlias = alias ?? contractName;
   await upsertContract(projectName, finalAlias, contractName, address);
+  
   return address
 }
 
@@ -72,7 +70,7 @@ export async function deployTemplateTask(
   console.info(`🚀 Deploying template '${templateName}' with alias '${alias}' for project: ${projectName}`);
 
   // Use the pre-generated deploy script for the template and record under alias
-  const address = await deployScriptAndRecord(projectName, templateName, alias);
+  const address = await deployContract(projectName, templateName, alias);
   console.info(`✅ Template '${templateName}' deployed successfully as '${alias}'`);
   return address;
 }
