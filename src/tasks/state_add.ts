@@ -1,4 +1,4 @@
-import { EVENT_SCRIPT, SHELL } from "../utils/constants.ts";
+import { EVENT_SCRIPT, SHELL, DEPLOY_TEMPLATE_SCRIPT } from "../utils/constants.ts";
 
 export async function assertEventFilesExist(files: string[]): Promise<void> {
   for (const file of files) {
@@ -32,6 +32,7 @@ export async function addStateTask(files: string[]): Promise<void> {
       args: [eventFilePath],
       env: {
         EVENT: EVENT_SCRIPT,
+        TEMPLATE: DEPLOY_TEMPLATE_SCRIPT,
       },
       stdout: "piped",
       stderr: "piped",

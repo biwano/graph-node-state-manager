@@ -3,6 +3,7 @@ import { killAnvilTask } from "../tasks/anvil_kill.ts";
 import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
 import { deployAllProjectsTask } from "../tasks/contracts_deploy.ts";
 import { deployTemplateTask } from "../tasks/contracts_deploy_template.ts";
+import { getDeployedAddress } from "../utils/config.ts";
 import { startAnvilTask } from "../tasks/anvil_start.ts";
 import { startGraphNodeTask } from "../tasks/graph_start.ts";
 import { stopGraphNodeTask } from "../tasks/graph_stop.ts";
@@ -12,6 +13,7 @@ import { buildEventCastCommand } from "../tasks/event_cast.ts";
 import { generateAllProjectsTask } from "../tasks/contracts_generate.ts";
 import { inspectTxTask } from "../tasks/anvil_inspect.ts";
 import { addStateTask } from "../tasks/state_add.ts";
+import { cliLog } from "../utils/logging.ts";
 
 export const killAnvilCommand = new Command()
   .name("anvil:stop")
@@ -46,7 +48,7 @@ export const anvilSetupCommand = new Command()
       await killAnvilTask();
       await startAnvilTask();
       await generateAllProjectsTask();
-      await deployAllProjectsTask(ANVIL_DEFAULT_RPC_URL, ANVIL_DEFAULT_PRIVATE_KEY);
+      await deployAllProjectsTask();
     } catch (error) {
       console.error("Error during anvil setup:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -84,7 +86,9 @@ export const deployTemplateCommand = new Command()
   .arguments("<project:string> <template:string> <alias:string>")
   .action(async (_options, project: string, template: string, alias: string) => {
     try {
-      await deployTemplateTask(project, template, alias);
+      const address = await deployTemplateTask(project, template, alias);
+      // If CLI flag is set, output the deployed address
+      cliLog(address);
     } catch (error) {
       console.error("Error deploying template:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);

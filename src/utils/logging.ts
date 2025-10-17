@@ -1,9 +1,18 @@
 import { readConfig } from "./config.ts";
 
-export async function configureLogging(): Promise<void> {
+const oldInfo = console.info;
+let cliMode = false;
+export function cliLog(message: string) {
+  if (cliMode) {
+    oldInfo(message);
+  }
+}
+
+export async function configureLogging(localCliMode?: boolean): Promise<void> {
   try {
+    cliMode = localCliMode ?? false;
     const config = await readConfig();
-    const logLevel = config.logLevel || "info";
+    const logLevel = cliMode ? "error" : config.logLevel || "info";
     
     switch (logLevel.toLowerCase()) {
       case "silent":

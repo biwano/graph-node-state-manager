@@ -26,7 +26,7 @@ export async function deployScriptAndRecord(
   projectName: string,
   contractName: string,
   alias?: string,
-): Promise<void> {
+): Promise<string> {
   const projectDir = `./foundry/${projectName}`;
   const scriptRelPath = `script/Deploy${contractName}.s.sol`;
   const scriptAbsPath = `${projectDir}/${scriptRelPath}`;
@@ -61,16 +61,18 @@ export async function deployScriptAndRecord(
   }
   const finalAlias = alias ?? contractName;
   await upsertContract(projectName, finalAlias, contractName, address);
+  return address
 }
 
 export async function deployTemplateTask(
   projectName: string, 
   templateName: string, 
   alias: string
-): Promise<void> {
+): Promise<string> {
   console.info(`🚀 Deploying template '${templateName}' with alias '${alias}' for project: ${projectName}`);
 
   // Use the pre-generated deploy script for the template and record under alias
-  await deployScriptAndRecord(projectName, templateName, alias);
+  const address = await deployScriptAndRecord(projectName, templateName, alias);
   console.info(`✅ Template '${templateName}' deployed successfully as '${alias}'`);
+  return address;
 }
