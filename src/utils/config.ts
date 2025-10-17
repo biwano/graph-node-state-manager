@@ -2,13 +2,14 @@ import { exists } from "std/fs/exists.ts";
 import { CONFIG_PATH } from "./constants.ts";
 
 export interface ProjectConfigContract { 
-  name: string; 
+  alias: string; 
+  contractName: string;
   address: string; 
 }
 
 export interface ProjectConfigEntry { 
   subgraph_path: string; 
-  contracts?: ProjectConfigContract[];
+  contracts?: Record<string, ProjectConfigContract>;
   graphql_url?: string;
   active?: boolean;
 }
@@ -40,7 +41,7 @@ export async function writeConfig(config: ProjectConfig): Promise<void> {
 
 export async function upsertProject(projectName: string, entry: Partial<ProjectConfigEntry>): Promise<ProjectConfig> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };
+  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
   const merged: ProjectConfigEntry = { ...current, ...entry };
   cfg.subgraphs[projectName] = merged;
   await writeConfig(cfg);
@@ -58,29 +59,35 @@ export async function removeProject(projectName: string): Promise<void> {
   await writeConfig(cfg);
 }
 
-export async function upsertContracts(projectName: string, addresses: Record<string, string>): Promise<void> {
+export async function upsertContract(
+  projectName: string,
+  alias: string,
+  contractName: string,
+  address: string,
+): Promise<void> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };
-  const map = new Map<string, string>((current.contracts || []).map((c) => [c.name, c.address]));
-  for (const [name, addr] of Object.entries(addresses)) map.set(name, addr);
-  current.contracts = Array.from(map.entries()).map(([name, address]) => ({ name, address }));
+  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
+  const contracts = current.contracts || {};
+  const entry: ProjectConfigContract = { alias, contractName, address };
+  contracts[alias] = entry;
+  current.contracts = contracts;
   cfg.subgraphs[projectName] = current;
   await writeConfig(cfg);
 }
 
 export async function clearContracts(projectName: string): Promise<void> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };
-  current.contracts = [];
+  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
+  current.contracts = {};
   cfg.subgraphs[projectName] = current;
   await writeConfig(cfg);
 }
 
-export async function getDeployedAddress(projectName: string, contractName: string): Promise<string | null> {
+export async function getDeployedAddress(projectName: string, alias: string): Promise<string | null> {
   const cfg = await readConfig();
   const entry = cfg.subgraphs[projectName];
   if (!entry || !entry.contracts) return null;
-  const found = entry.contracts.find((c) => c.name === contractName);
+  const found = entry.contracts[alias];
   return found ? found.address : null;
 }
 

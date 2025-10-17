@@ -165,11 +165,11 @@ export const setupGraphCommand = new Command()
 
 export const eventCommand = new Command()
   .name("event")
-  .arguments("<project:string> <datasource:string> <event:string> [args...:string]")
-  .description("Generate a cast send command for a project's datasource event")
-  .action(async (_options, project: string, datasource: string, event: string, ...args: string[]) => {
+  .arguments("<project:string> <alias:string> <event:string> [args...:string]")
+  .description("Generate a cast send command for a project's contract alias event")
+  .action(async (_options, project: string, alias: string, event: string, ...args: string[]) => {
     try {
-      await buildEventCastCommand(project, datasource, event, args);
+      await buildEventCastCommand(project, alias, event, args);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
       Deno.exit(1);

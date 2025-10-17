@@ -1,7 +1,6 @@
 import { exists } from "std/fs/exists.ts";
 import { getActiveProjects } from "../utils/config.ts";
-import { upsertContracts, clearContracts } from "../utils/config.ts";
-import { DENO_COMMAND_OPTIONS, ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
+import { clearContracts } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { deployScriptAndRecord } from "./contracts_deploy_template.ts";
@@ -38,7 +37,7 @@ export async function deployForProjectTask(projectName: string, projectDir: stri
 
     console.debug(`Deploying contract: ${contract.name}`);
     try {
-      await deployScriptAndRecord(projectName, contract.name);
+      await deployScriptAndRecord(projectName, contract.name, contract.name);
     } catch (e) {
       console.error(`Failed to deploy ${contract.name}:`, e instanceof Error ? e.message : String(e));
       continue;

@@ -105,7 +105,7 @@ function validateArgFormat(type: string, value: string): string | null {
 
 export async function buildEventCastCommand(
   projectName: string,
-  dataSourceName: string,
+  alias: string,
   eventName: string,
   eventArgs: string[],
 ): Promise<void> {
@@ -116,12 +116,12 @@ export async function buildEventCastCommand(
   }
 
   const subgraphPath = config[projectName].subgraph_path;
-  const { contracts } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
-
-  const contract = contracts.find((c) => c.name === dataSourceName);
+  const { dataSources, templates } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
+  const contracts = [...dataSources, ...templates];
+  const contract = contracts.find((c) => c.name === alias || c.name === alias);
   if (!contract) {
     const knownDatasources = contracts.map((c) => c.name).join(", ");
-    throw new Error(`Unknown datasource '${dataSourceName}'. Known datasources: ${knownDatasources}`);
+    throw new Error(`Unknown datasource alias '${alias}'. Known datasources: ${knownDatasources}`);
   }
 
   const event = contract.events.find((e) => e.name === eventName);
@@ -147,10 +147,10 @@ export async function buildEventCastCommand(
   }
 
   // Require an actual deployed address from config; do not fallback to subgraph address
-  const address = await getDeployedAddress(projectName, dataSourceName);
+  const address = await getDeployedAddress(projectName, alias);
   if (!address) {
     throw new Error(
-      `No deployed address found for datasource '${dataSourceName}' in project '${projectName}'. ` +
+      `No deployed address found for alias '${alias}' in project '${projectName}'. ` +
       `Deploy contracts first (e.g., 'deno task run task anvil:setup') so addresses are recorded in config.json.`
     );
   }

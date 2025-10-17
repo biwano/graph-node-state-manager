@@ -11,10 +11,10 @@ async function prepareSubgraphYamlWithDeployedAddresses(
 ): Promise<{ modified: boolean; originalContent: string }> {
   // Build address map from config
   const cfg = await readConfig();
-  const contracts = cfg.subgraphs[projectName]?.contracts || [];
+  const contracts = cfg.subgraphs[projectName]?.contracts || {};
   const nameToAddress = new Map<string, string>();
-  for (const c of contracts) {
-    if (c.name && c.address) nameToAddress.set(c.name, c.address);
+  for (const [_alias, c] of Object.entries(contracts)) {
+    if (c.contractName && c.address) nameToAddress.set(c.contractName, c.address);
   }
 
   // Backup and maybe rewrite subgraph.yaml

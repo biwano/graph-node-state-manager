@@ -1,6 +1,6 @@
 import { exists } from "std/fs/exists.ts";
 import { getActiveProjects } from "../utils/config.ts";
-import { upsertContracts } from "../utils/config.ts";
+import { upsertContract } from "../utils/config.ts";
 import { DENO_COMMAND_OPTIONS, ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
@@ -25,10 +25,8 @@ export function parseDeployedAddressFromStdout(output: string): string {
 export async function deployScriptAndRecord(
   projectName: string,
   contractName: string,
-  nameKey?: string,
+  alias?: string,
 ): Promise<void> {
-  const config = await getActiveProjects();
-  const projectConfig = config[projectName];
   const projectDir = `./foundry/${projectName}`;
   const scriptRelPath = `script/Deploy${contractName}.s.sol`;
   const scriptAbsPath = `${projectDir}/${scriptRelPath}`;
@@ -61,8 +59,8 @@ export async function deployScriptAndRecord(
   if (!address) {
     throw new Error("Failed to parse deployed address from output");
   }
-  const key = nameKey ?? contractName;
-  await upsertContracts(projectName, { [key]: address });
+  const finalAlias = alias ?? contractName;
+  await upsertContract(projectName, finalAlias, contractName, address);
 }
 
 export async function deployTemplateTask(
