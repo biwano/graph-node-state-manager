@@ -34,9 +34,9 @@ export async function deployProjectContractsTask(projectName: string, projectDir
       continue;
     }
 
-    console.debug(`Deploying contract: ${contract.name}`);
+    console.debug(`Deploying contract (anvil_setCode): ${contract.name}`);
     try {
-      await deployContract(projectName, contract.name, contract.name);
+      await deployContract(projectName, contract.name, contract.name, contract.address);
     } catch (e) {
       console.error(`Failed to deploy ${contract.name}:`, e instanceof Error ? e.message : String(e));
       continue;
