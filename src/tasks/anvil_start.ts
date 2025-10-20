@@ -1,4 +1,5 @@
-import { ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+import { ANVIL_DEFAULT_RPC_URL as _ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
+import { jsonRpc } from "../utils/anvil.ts";
 import { waitForService } from "../utils/wait_for_service.ts";
 import { ensureDir } from "std/fs/ensure_dir.ts";
 
@@ -40,18 +41,8 @@ export async function startAnvilTask(): Promise<void> {
   // Wait for anvil to be ready by checking the RPC endpoint
   const checkAnvil = async (): Promise<boolean> => {
     try {
-      const response = await fetch(ANVIL_DEFAULT_RPC_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "eth_blockNumber",
-          params: [],
-          id: 1
-        })
-      });
-
-      return response.ok;
+      await jsonRpc("eth_blockNumber", []);
+      return true;
     } catch {
       return false;
     }

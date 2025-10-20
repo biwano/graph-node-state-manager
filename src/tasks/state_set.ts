@@ -17,7 +17,7 @@ export async function setStateTask(files: string[]): Promise<void> {
   await Promise.all([
     (async () => {
       await killAnvilTask();
-      await startAnvilTask(true);
+      await startAnvilTask();
     })(),
     generateAllProjectsTask(),
     (async () => {

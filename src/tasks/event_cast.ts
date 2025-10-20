@@ -119,7 +119,6 @@ export async function castEvent(
   alias: string,
   eventName: string,
   eventArgs: string[],
-  shouldMine: boolean = true,
 ): Promise<void> {
   const projectConfig = await getProjectConfig(projectName);
   if (!projectConfig || !projectConfig.contracts) {
@@ -201,11 +200,6 @@ export async function castEvent(
  
   const txHash = extractTransactionHash(output);
   cliLog(txHash);
-
-  // Mine the transaction to ensure it's included in a block (unless disabled)
-  if (shouldMine) {
-    await mineAnvilBlocks(1);
-  }
 
 }
 

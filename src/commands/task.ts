@@ -13,6 +13,7 @@ import { inspectTxTask } from "../tasks/anvil_inspect.ts";
 import { addStateTask } from "../tasks/state_add.ts";
 import { cliLog } from "../utils/logging.ts";
 import { mineAnvilBlocks } from "../utils/anvil.ts";
+import { increaseAnvilTimeTask } from "../tasks/anvil_increase_time.ts";
 
 export const killAnvilCommand = new Command()
   .name("anvil:stop")
@@ -64,6 +65,19 @@ export const anvilMineCommand = new Command()
       console.info(`✅ Mined ${blocks} block(s) successfully`);
     } catch (error) {
       console.error("Error mining blocks:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
+export const anvilIncreaseTimeCommand = new Command()
+  .name("anvil:increaseTime")
+  .description("Increase Anvil EVM time by a number of seconds")
+  .arguments("<seconds:number>")
+  .action(async (_options, seconds: number) => {
+    try {
+      await increaseAnvilTimeTask(seconds);
+    } catch (error) {
+      console.error("Error increasing time:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
     }
   });
@@ -184,10 +198,9 @@ export const eventCommand = new Command()
   .name("event")
   .arguments("<project:string> <alias:string> <event:string> [args...:string]")
   .description("Generate a cast send command for a project's contract alias event")
-  .option("--no-mine", "Don't mine blocks after sending the transaction")
-  .action(async (options, project: string, alias: string, event: string, ...args: string[]) => {
+  .action(async (_options, project: string, alias: string, event: string, ...args: string[]) => {
     try {
-      await castEvent(project, alias, event, args, !options.noMine);
+      await castEvent(project, alias, event, args);
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
       Deno.exit(1);
@@ -228,6 +241,7 @@ export const taskCommand = new Command()
   .command("anvil:stop", killAnvilCommand)
   .command("anvil:setup", anvilSetupCommand)
   .command("anvil:mine", anvilMineCommand)
+  .command("anvil:increaseTime", anvilIncreaseTimeCommand)
   .command("anvil:inspect", anvilInspectCommand)
   .command("contracts:generate", generateCommand)
   .command("contracts:deploy", deployCommand)

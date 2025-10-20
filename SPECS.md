@@ -54,6 +54,10 @@ The tasks are:
   - Installs the CLI as a global executable named `graph-node-state-manager`
 - `task anvil:start | task anvil:stop | task anvil:setup`
   - Manage Anvil lifecycle; `anvil:setup` stops any running instance, starts a new one, generates contracts, and deploys them
+- `task anvil:mine [blocks]`
+  - Mine one or more blocks on Anvil (default 1)
+- `task anvil:increaseTime <seconds>`
+  - Increase the EVM time on Anvil by the given seconds using `evm_increaseTime`
 - `task anvil:inspect <txHash>`
   - Inspect a transaction using `debug_traceTransaction` on the local Anvil node
 - `task graph:start | task graph:stop | task graph:wipe`

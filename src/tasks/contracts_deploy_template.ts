@@ -1,5 +1,6 @@
 import { upsertContract } from "../utils/config.ts";
-import { DENO_COMMAND_OPTIONS, ANVIL_DEFAULT_RPC_URL } from "../utils/constants.ts";
+import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+import { jsonRpc } from "../utils/anvil.ts";
 
 export async function deployTemplateTask(
   projectName: string, 
@@ -36,17 +37,6 @@ async function getRuntimeBytecode(projectDir: string, contractName: string): Pro
   return bytecode;
 }
 
-async function jsonRpc<T = unknown>(method: string, params: unknown[]): Promise<T> {
-  const res = await fetch(ANVIL_DEFAULT_RPC_URL, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
-  if (!res.ok) throw new Error(`RPC ${method} failed: HTTP ${res.status}`);
-  const body = await res.json();
-  if (body.error) throw new Error(`RPC ${method} error: ${body.error.message || JSON.stringify(body.error)}`);
-  return body.result as T;
-}
 
 async function generateDeterministicAddress(projectName: string, contractName: string): Promise<string> {
   const input = `${projectName}:${contractName}`;
