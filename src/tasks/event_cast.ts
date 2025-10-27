@@ -4,7 +4,6 @@ import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
 import { getDeployedAddress } from "../utils/config.ts";
 import { cliLog } from "../utils/logging.ts";
-import { mineAnvilBlocks } from "../utils/anvil.ts";
 
 function capitalize(text: string): string {
   return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
@@ -144,12 +143,12 @@ export async function castEvent(
   const event = contract.events.find((e) => e.name === eventName);
   if (!event) {
     const knownEvents = contract.events
-      .map((e) => eventSignature(e.name, e.inputs.map((i) => i.type)))
+      .map((e) => eventSignature(e.name, e.params.map((i) => i.type)))
       .join(", ");
     throw new Error(`Unknown event '${eventName}'. Known events: ${knownEvents}`);
   }
 
-  const expectedTypes = event.inputs.map((i) => i.type);
+  const expectedTypes = event.params.map((i) => i.type);
   if (eventArgs.length !== expectedTypes.length) {
     const sig = eventSignature(event.name, expectedTypes);
     throw new Error(`Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}. Passed arguments: [${eventArgs.join(", ")}]`);
@@ -159,7 +158,7 @@ export async function castEvent(
     const err = validateArgFormat(expectedTypes[i], eventArgs[i]);
     if (err) {
       const sig = eventSignature(event.name, expectedTypes);
-      throw new Error(`Invalid argument #${i + 1} ('${event.inputs[i].name}'): ${err}. Signature: ${sig}. passed : ${eventArgs[i]}`);
+      throw new Error(`Invalid argument #${i + 1} ('${event.params[i].name}'): ${err}. Signature: ${sig}. passed : ${eventArgs[i]}`);
     }
   }
 

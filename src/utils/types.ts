@@ -1,10 +1,15 @@
+
+export interface ContractEventParams {
+  name: string;
+  type: string;
+  indexed?: boolean;
+  structName?: string;
+  structParams?: Array<ContractEventParams>;
+}
+
 export interface ContractEvent {
   name: string;
-  inputs: Array<{
-    name: string;
-    type: string;
-    indexed?: boolean;
-  }>;
+  params: Array<ContractEventParams>;
 }
 
 export interface Contract {

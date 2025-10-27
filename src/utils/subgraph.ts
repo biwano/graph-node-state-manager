@@ -1,5 +1,5 @@
 import { parse as parseYaml } from "std/yaml/mod.ts";
-import { Contract, ContractEvent } from "./types.ts";
+import { Contract, ContractEvent, ContractEventParams } from "./types.ts";
 
 // Strongly typed shape for subgraph.yaml
 export interface SubgraphYaml {
@@ -116,7 +116,7 @@ function findMatchingParentheses(str: string, startIndex: number): { start: numb
 }
 
 function splitByCommaIgnoringNestedParens(str: string): string[] {
-  const params = [];
+  const params: string[] = [];
   let currentParam = '';
   let parenCount = 0;
   
@@ -139,18 +139,54 @@ function splitByCommaIgnoringNestedParens(str: string): string[] {
   return params;
 }
 
+function parseTupleContent(tupleContent: string, baseName: string): Array<ContractEventParams> {
+  const params: Array<ContractEventParams> = [];
+  const splitParams = splitByCommaIgnoringNestedParens(tupleContent);
+  
+  let fieldIndex = 0;
+  for (const param of splitParams) {
+    if (!param.trim()) continue;
+    
+    const parts = param.trim().split(/\s+/);
+    const type = parts[0] || '';
+    const fieldName = parts[1] || `field${fieldIndex}`;
+    
+    const result: ContractEventParams = {
+      name: fieldName,
+      type,
+    };
+    
+    // Check if this is a nested tuple
+    if (type.startsWith('(') && type.includes(',')) {
+      const typeSuffix = type.slice(type.indexOf(')') + 1);
+      const nestedTupleContent = type.slice(1, type.indexOf(')'));
+      result.structName = `Struct${baseName}Field${fieldIndex}`;
+      result.type = `${result.structName}${typeSuffix}`;
+      result.structParams = parseTupleContent(nestedTupleContent, `${baseName}Field${fieldIndex}`);
+    }
+    
+    params.push(result);
+    fieldIndex += 1;
+  }
+  
+  return params;
+}
+
 function parseEventSignature(eventSignature: string, dataSourceName: string): ContractEvent {
-  const name = eventSignature.split('(')[0];
+  if (dataSourceName === "RewardManager") {
+    console.log(`parseEventSignature: ${eventSignature} ${dataSourceName}`);
+  }
+  const eventName = eventSignature.split('(')[0];
 
   // Find the content between the outermost parentheses
   const parenMatch = findMatchingParentheses(eventSignature, 0);
-  if (!parenMatch) return { name, inputs: [] };
+  if (!parenMatch) return { name: eventName, params: [] };
   
   const paramsString = eventSignature.substring(parenMatch.start + 1, parenMatch.end);
-  const inputs: Array<{ name: string; type: string; indexed?: boolean }> = [];
+  const inputs: Array<ContractEventParams> = [];
   
   // Split by comma, but only when not inside parentheses
-   const params = splitByCommaIgnoringNestedParens(paramsString);
+  const params = splitByCommaIgnoringNestedParens(paramsString);
 
   let argIndex = 0;
   for (const param of params) {
@@ -159,16 +195,29 @@ function parseEventSignature(eventSignature: string, dataSourceName: string): Co
     const parts = param.split(/\s+/);
     const indexed = parts[0] === 'indexed';
     let type = indexed ? (parts[1] || '') : (parts[0] || '');
+    let structTypeName: string | undefined = undefined;
     const paramName = indexed ? (parts[2] || `arg${argIndex}`) : (parts[1] || `arg${argIndex}`);
+    
     
     // Handle tuple types by creating a struct name with data source name
     if (type.startsWith('(') && type.includes(',')) {
-      type = `Struct${dataSourceName}${argIndex}`;
+      // Check if it's an array of tuples
+      const typeSuffix = type.slice(type.indexOf(')') + 1);
+      structTypeName = `Struct${eventName}${argIndex}`;
+      type = `${structTypeName}${typeSuffix}`;
+      
+      // Parse the tuple content - need to extract from original param, not modified type
+      const originalType = indexed ? (parts[1] || '') : (parts[0] || '');
+      const tupleContent = originalType.slice(1, originalType.indexOf(')'));
+      const structParams = parseTupleContent(tupleContent, `${eventName}${argIndex}`);
+      
+      inputs.push({ name: paramName, type, indexed, structName: structTypeName, structParams });
+    } else {
+      inputs.push({ name: paramName, type, indexed });
     }
     
-    inputs.push({ name: paramName, type, indexed });
     argIndex += 1;
   }
 
-  return { name, inputs };
+  return { name: eventName, params: inputs };
 }

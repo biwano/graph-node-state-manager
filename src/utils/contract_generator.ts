@@ -3,32 +3,60 @@ import vento from "vento";
 import { CONTRACT_TEMPLATE } from "../templates/contract.ts";
 import { DEPLOY_SCRIPT_TEMPLATE } from "../templates/deploy_script.ts";
 
+function collectStructDeclarations(params: Array<{ structName?: string; structParams?: Array<any> }>): Array<{ name: string; fields: string }> {
+  const structs: Array<{ name: string; fields: string }> = [];
+  
+  for (const param of params) {
+    if (param.structName && param.structParams) {
+      // Generate fields for this struct
+      const fields = param.structParams.map((field: any) => {
+        return `        ${field.type} ${field.name};`;
+      }).join('\n');
+      
+      structs.push({
+        name: param.structName,
+        fields
+      });
+      
+      // Recursively collect nested structs
+      const nestedStructs = collectStructDeclarations(param.structParams);
+      structs.push(...nestedStructs);
+    }
+  }
+  
+  return structs;
+}
+
 export async function generateFakeContract(contract: Contract): Promise<string> {
   if (!contract.events || contract.events.length === 0) {
     throw new Error(`No events found for contract '${contract.name}'`);
   }
   
-  // Collect all struct types needed
-  const structTypes = new Set<string>();
+  // Collect all struct types needed (recursively)
+  const structDeclarationsSet = new Set<string>();
+  const structDeclarationsArray: Array<{ name: string; fields: string }> = [];
+  
   for (const event of contract.events) {
-    for (const input of event.inputs) {
-      if (input.type.includes('Struct')) {
-        structTypes.add(input.type);
+    const structs = collectStructDeclarations(event.params);
+    for (const struct of structs) {
+      if (!structDeclarationsSet.has(struct.name)) {
+        structDeclarationsSet.add(struct.name);
+        structDeclarationsArray.push(struct);
       }
     }
   }
   
-  const structDeclarations = Array.from(structTypes).map(structType => 
-    `    struct ${structType} {\n        uint256[] tokenIds;\n        uint256 amount;\n        string projectId;\n        address beneficiary;\n        string beneficiaryName;\n        string beneficiaryPostalCode;\n        string retirementMessage;\n        string retirementMetadata;\n        uint256 timestamp;\n        uint256 totalVintageQuantity;\n    }`
+  const structDeclarations = structDeclarationsArray.map(struct => 
+    `    struct ${struct.name} {\n${struct.fields}\n    }`
   );
   
-  const eventDeclarations = contract.events.map(e => `    event ${e.name}(${formatEventParameters(e.inputs)});`);
+  const eventDeclarations = contract.events.map(e => `    event ${e.name}(${formatEventParameters(e.params)});`);
 
   const functionsDeclarations = contract.events.map((e, index) => {
     const event = contract.events[index];
     const funcName = `emit${capitalize(e.name)}`;
-    const params = formatFunctionParameters(event.inputs);
-    const emitArgs = formatEmitArguments(event.inputs);
+    const params = formatFunctionParameters(event.params);
+    const emitArgs = formatEmitArguments(event.params);
     return `    function ${funcName}(${params}) external {\n        emit ${event.name}(${emitArgs});\n    }`;
   });
 
