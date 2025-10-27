@@ -86,7 +86,6 @@ function parseDataSources(sources: DataSource[], isTemplate: boolean): Contract[
             ? "0x0000000000000000000000000000000000000000" // Templates don't have fixed addresses
             : (source.source.address || "0x0000000000000000000000000000000000000000"),
           events: events,
-          type: isTemplate ? "template" : "datasource"
         });
       }
     }

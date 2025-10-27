@@ -17,7 +17,6 @@ export interface Contract {
   name: string;
   address: string;
   events: ContractEvent[];
-  type: "datasource" | "template";
 }
 
 
