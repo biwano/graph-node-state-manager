@@ -1,16 +1,16 @@
-import { Contract } from "./types.ts";
+import { Contract, ContractEventParams } from "./types.ts";
 import vento from "vento";
 import { CONTRACT_TEMPLATE } from "../templates/contract.ts";
 import { DEPLOY_SCRIPT_TEMPLATE } from "../templates/deploy_script.ts";
 
-function collectStructDeclarations(params: Array<{ structName?: string; structParams?: Array<any> }>): Array<{ name: string; fields: string }> {
+function collectStructDeclarations(params: Array<ContractEventParams>): Array<{ name: string; fields: string }> {
   const structs: Array<{ name: string; fields: string }> = [];
   
   for (const param of params) {
     if (param.structName && param.structParams) {
       // Generate fields for this struct
-      const fields = param.structParams.map((field: any) => {
-        return `        ${field.type} ${field.name};`;
+      const fields = param.structParams.map((field: ContractEventParams) => {
+        return `        ${field.contractType} ${field.name};`;
       }).join('\n');
       
       structs.push({
@@ -68,23 +68,23 @@ export async function generateFakeContract(contract: Contract): Promise<string> 
   });
 }
 
-function formatEventParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatEventParameters(inputs: ContractEventParams[]): string {
   return inputs
-    .map((input) => `${input.type} ${input.indexed ? "indexed " : ""}${input.name}`)
+    .map((input) => `${input.contractType} ${input.indexed ? "indexed " : ""}${input.name}`)
     .join(", ");
 }
 
-function formatFunctionParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatFunctionParameters(inputs: ContractEventParams[]): string {
   return inputs.map((input) => {
     // Add data location for reference types in external functions
-    if (input.type.includes("[]") || input.type === "string" || input.type.startsWith("Struct")) {
-      return `${input.type} calldata ${input.name}`;
+    if (input.contractType.includes("[]") || input.contractType === "string" || input.contractType.startsWith("Struct")) {
+      return `${input.contractType} calldata ${input.name}`;
     }
-    return `${input.type} ${input.name}`;
+    return `${input.contractType} ${input.name}`;
   }).join(", ");
 }
 
-function formatEmitArguments(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatEmitArguments(inputs: ContractEventParams[]): string {
   return inputs.map((input) => input.name).join(", ");
 }
 

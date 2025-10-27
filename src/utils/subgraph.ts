@@ -77,7 +77,7 @@ function parseDataSources(sources: DataSource[], isTemplate: boolean): Contract[
     if (mapping && mapping.eventHandlers && Array.isArray(mapping.eventHandlers)) {
       const contractName = source.name;
       const events: ContractEvent[] = mapping.eventHandlers
-        .map((handler) => parseEventSignature(handler.event, contractName));
+        .map((handler) => parseEventSignature(handler.event));
       
       if (events.length > 0) {
         contracts.push({
@@ -146,14 +146,17 @@ function parseTupleContent(tupleContent: string, baseName: string): Array<Contra
   let fieldIndex = 0;
   for (const param of splitParams) {
     if (!param.trim()) continue;
-    
-    const parts = param.trim().split(/\s+/);
-    const type = parts[0] || '';
-    const fieldName = parts[1] || `field${fieldIndex}`;
+
+    const parts = param.split(/\s+/);
+    const indexed = parts[0] === 'indexed';
+    const type = indexed ? (parts[1] || '') : (parts[0] || '');
+    const fieldName = indexed ? (parts[2] || `arg${fieldIndex}`) : (parts[1] || `arg${fieldIndex}`);
+
     
     const result: ContractEventParams = {
       name: fieldName,
-      type,
+      rawType: type,
+      contractType: type,
     };
     
     // Check if this is a nested tuple
@@ -161,7 +164,7 @@ function parseTupleContent(tupleContent: string, baseName: string): Array<Contra
       const typeSuffix = type.slice(type.indexOf(')') + 1);
       const nestedTupleContent = type.slice(1, type.indexOf(')'));
       result.structName = `Struct${baseName}Field${fieldIndex}`;
-      result.type = `${result.structName}${typeSuffix}`;
+      result.contractType = `${result.structName}${typeSuffix}`;
       result.structParams = parseTupleContent(nestedTupleContent, `${baseName}Field${fieldIndex}`);
     }
     
@@ -172,10 +175,7 @@ function parseTupleContent(tupleContent: string, baseName: string): Array<Contra
   return params;
 }
 
-function parseEventSignature(eventSignature: string, dataSourceName: string): ContractEvent {
-  if (dataSourceName === "RewardManager") {
-    console.log(`parseEventSignature: ${eventSignature} ${dataSourceName}`);
-  }
+function parseEventSignature(eventSignature: string): ContractEvent {
   const eventName = eventSignature.split('(')[0];
 
   // Find the content between the outermost parentheses
@@ -183,41 +183,6 @@ function parseEventSignature(eventSignature: string, dataSourceName: string): Co
   if (!parenMatch) return { name: eventName, params: [] };
   
   const paramsString = eventSignature.substring(parenMatch.start + 1, parenMatch.end);
-  const inputs: Array<ContractEventParams> = [];
   
-  // Split by comma, but only when not inside parentheses
-  const params = splitByCommaIgnoringNestedParens(paramsString);
-
-  let argIndex = 0;
-  for (const param of params) {
-    if (!param) continue;
-    
-    const parts = param.split(/\s+/);
-    const indexed = parts[0] === 'indexed';
-    let type = indexed ? (parts[1] || '') : (parts[0] || '');
-    let structTypeName: string | undefined = undefined;
-    const paramName = indexed ? (parts[2] || `arg${argIndex}`) : (parts[1] || `arg${argIndex}`);
-    
-    
-    // Handle tuple types by creating a struct name with data source name
-    if (type.startsWith('(') && type.includes(',')) {
-      // Check if it's an array of tuples
-      const typeSuffix = type.slice(type.indexOf(')') + 1);
-      structTypeName = `Struct${eventName}${argIndex}`;
-      type = `${structTypeName}${typeSuffix}`;
-      
-      // Parse the tuple content - need to extract from original param, not modified type
-      const originalType = indexed ? (parts[1] || '') : (parts[0] || '');
-      const tupleContent = originalType.slice(1, originalType.indexOf(')'));
-      const structParams = parseTupleContent(tupleContent, `${eventName}${argIndex}`);
-      
-      inputs.push({ name: paramName, type, indexed, structName: structTypeName, structParams });
-    } else {
-      inputs.push({ name: paramName, type, indexed });
-    }
-    
-    argIndex += 1;
-  }
-
-  return { name: eventName, params: inputs };
+  return { name: eventName, params: parseTupleContent(paramsString, eventName) };
 }

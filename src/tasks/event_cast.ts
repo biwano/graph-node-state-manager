@@ -143,12 +143,12 @@ export async function castEvent(
   const event = contract.events.find((e) => e.name === eventName);
   if (!event) {
     const knownEvents = contract.events
-      .map((e) => eventSignature(e.name, e.params.map((i) => i.type)))
+      .map((e) => eventSignature(e.name, e.params.map((i) => i.rawType)))
       .join(", ");
     throw new Error(`Unknown event '${eventName}'. Known events: ${knownEvents}`);
   }
 
-  const expectedTypes = event.params.map((i) => i.type);
+  const expectedTypes = event.params.map((i) => i.rawType);
   if (eventArgs.length !== expectedTypes.length) {
     const sig = eventSignature(event.name, expectedTypes);
     throw new Error(`Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}. Passed arguments: [${eventArgs.join(", ")}]`);
