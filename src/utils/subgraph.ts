@@ -156,6 +156,7 @@ function parseTupleContent(tupleContent: string, baseName: string): Array<Contra
       name: fieldName,
       rawType: type,
       contractType: type,
+      indexed: indexed,
     };
     
     // Check if this is a nested tuple
