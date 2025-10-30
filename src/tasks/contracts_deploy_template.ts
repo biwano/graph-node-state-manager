@@ -17,12 +17,12 @@ export async function deployTemplateTask(
 
 async function getRuntimeBytecode(projectDir: string, contractName: string): Promise<string> {
   // Ensure build artifacts exist
-  const buildCmd = new Deno.Command("forge", { args: ["build"], cwd: projectDir, ...DENO_COMMAND_OPTIONS });
+  const buildCmd = new Deno.Command("forge", { args: ["build", "--optimize", "--via-ir"], cwd: projectDir, ...DENO_COMMAND_OPTIONS });
   await buildCmd.output();
 
   // Inspect runtime bytecode
   const inspectCmd = new Deno.Command("forge", {
-    args: ["inspect", contractName, "deployedBytecode"],
+    args: ["inspect", contractName, "deployedBytecode", "--optimize", "--via-ir"],
     cwd: projectDir,
     ...DENO_COMMAND_OPTIONS,
   });
