@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+export const DEPLOY_SCRIPT_TEMPLATE = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
@@ -21,5 +21,6 @@ contract Deploy is Script {
         vm.stopBroadcast();
     }
 }
+`;
 
 

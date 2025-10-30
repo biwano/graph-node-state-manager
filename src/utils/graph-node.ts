@@ -55,7 +55,7 @@ export async function waitForGraphNode(): Promise<void> {
   };
 
   await waitForService(checkGraphNode, {
-    serviceName: "graph-node",
+    serviceName: "Graph Node",
     maxRetries: 30,
     retryDelay: 2000
   });
@@ -68,7 +68,7 @@ export async function waitForGraphSync(graphqlUrl: string): Promise<void> {
       const graphBlock = await getGraphIndexedBlock(graphqlUrl);
       
       if (graphBlock !== null) {
-        console.log(`  Anvil block: ${anvilBlock}, Graph block: ${graphBlock}`);
+        console.debug(`  Anvil block: ${anvilBlock}, Graph block: ${graphBlock}`);
         return graphBlock >= anvilBlock;
       }
       

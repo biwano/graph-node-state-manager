@@ -1,7 +1,8 @@
 {
   "tasks": {
-    "run": "deno run --allow-read --allow-write --allow-run --allow-net src/main.ts",
-    "test": "deno run --allow-all test/test_integration.ts"
+    "cli": "deno task install && deno run --allow-read --allow-write --allow-run --allow-net src/main.ts",
+    "test": "deno task install && deno run --allow-all test/test_integration.ts",
+    "install": "deno install -A -f --global --config=deno.json -n graph-node-state-manager src/main.ts"
   },
   "imports": {
     "cliffy/command": "https://deno.land/x/cliffy@v1.0.0-rc.4/command/mod.ts",

@@ -8,7 +8,9 @@ export const CONFIG_PATH = `${cwd}/config.json`;
 export const FOUNDRY_ROOT = `${cwd}/foundry`;
 export const DEFAULT_PROJECT_NAME = "default";
 export const SUBGRAPH_YAML_FILENAME = "subgraph.yaml";
-export const EVENT_SCRIPT = "deno task run task event";
+export const EVENT_SCRIPT = "graph-node-state-manager task event --cli";
+export const DEPLOY_TEMPLATE_SCRIPT = "graph-node-state-manager task contracts:deploy_template --cli";
+export const INCREASE_TIME_SCRIPT = "graph-node-state-manager task anvil:increaseTime --cli";
 export const SHELL = "bash";
 export const DENO_COMMAND_OPTIONS = {
   stdout: "piped" as const,

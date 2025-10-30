@@ -1,45 +1,90 @@
-import { Contract } from "./types.ts";
+import { Contract, ContractEventParams } from "./types.ts";
 import vento from "vento";
-import { join } from "std/path/mod.ts";
+import { CONTRACT_TEMPLATE } from "../templates/contract.ts";
+import { DEPLOY_SCRIPT_TEMPLATE } from "../templates/deploy_script.ts";
+
+function collectStructDeclarations(params: Array<ContractEventParams>): Array<{ name: string; fields: string }> {
+  const structs: Array<{ name: string; fields: string }> = [];
+  
+  for (const param of params) {
+    if (param.structName && param.structParams) {
+      // Generate fields for this struct
+      const fields = param.structParams.map((field: ContractEventParams) => {
+        return `        ${field.contractType} ${field.name};`;
+      }).join('\n');
+      
+      structs.push({
+        name: param.structName,
+        fields
+      });
+      
+      // Recursively collect nested structs
+      const nestedStructs = collectStructDeclarations(param.structParams);
+      structs.push(...nestedStructs);
+    }
+  }
+  
+  return structs;
+}
 
 export async function generateFakeContract(contract: Contract): Promise<string> {
   if (!contract.events || contract.events.length === 0) {
     throw new Error(`No events found for contract '${contract.name}'`);
   }
-  const eventDeclarations = contract.events.map(e => `    event ${e.name}(${formatEventParameters(e.inputs)});`);
+  
+  // Collect all struct types needed (recursively)
+  const structDeclarationsSet = new Set<string>();
+  const structDeclarationsArray: Array<{ name: string; fields: string }> = [];
+  
+  for (const event of contract.events) {
+    const structs = collectStructDeclarations(event.params);
+    for (const struct of structs) {
+      if (!structDeclarationsSet.has(struct.name)) {
+        structDeclarationsSet.add(struct.name);
+        structDeclarationsArray.push(struct);
+      }
+    }
+  }
+  
+  const structDeclarations = structDeclarationsArray.map(struct => 
+    `    struct ${struct.name} {\n${struct.fields}\n    }`
+  );
+  
+  const eventDeclarations = contract.events.map(e => `    event ${e.name}(${formatEventParameters(e.params)});`);
 
   const functionsDeclarations = contract.events.map((e, index) => {
     const event = contract.events[index];
     const funcName = `emit${capitalize(e.name)}`;
-    const params = formatFunctionParameters(event.inputs);
-    const emitArgs = formatEmitArguments(event.inputs);
+    const params = formatFunctionParameters(event.params);
+    const emitArgs = formatEmitArguments(event.params);
     return `    function ${funcName}(${params}) external {\n        emit ${event.name}(${emitArgs});\n    }`;
   });
 
-  return await renderWithVento("Contract.vto", {
+  return await renderWithVento(CONTRACT_TEMPLATE, {
     name: contract.name,
+    structDeclarations,
     eventDeclarations,
     functionsDeclarations,
   });
 }
 
-function formatEventParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatEventParameters(inputs: ContractEventParams[]): string {
   return inputs
-    .map((input) => `${input.type} ${input.indexed ? "indexed " : ""}${input.name}`)
+    .map((input) => `${input.contractType} ${input.indexed ? "indexed " : ""}${input.name}`)
     .join(", ");
 }
 
-function formatFunctionParameters(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatFunctionParameters(inputs: ContractEventParams[]): string {
   return inputs.map((input) => {
-    // Add data location for array types in external functions
-    if (input.type.includes("[]")) {
-      return `${input.type} calldata ${input.name}`;
+    // Add data location for reference types in external functions
+    if (input.contractType.includes("[]") || input.contractType === "string" || input.contractType.startsWith("Struct")) {
+      return `${input.contractType} calldata ${input.name}`;
     }
-    return `${input.type} ${input.name}`;
+    return `${input.contractType} ${input.name}`;
   }).join(", ");
 }
 
-function formatEmitArguments(inputs: Array<{ name: string; type: string; indexed?: boolean }>): string {
+function formatEmitArguments(inputs: ContractEventParams[]): string {
   return inputs.map((input) => input.name).join(", ");
 }
 
@@ -54,15 +99,13 @@ export async function buildDeployScript(_projectName: string, contracts: Contrac
       instanceName: `inst${c.name}`,
     })),
   } as Record<string, unknown>;
-  return await renderWithVento("Deploy.s.vto", data);
+  return await renderWithVento(DEPLOY_SCRIPT_TEMPLATE, data);
 }
 
-export async function renderWithVento(templateName: string, data: Record<string, unknown>): Promise<string> {
+export async function renderWithVento(templateSource: string, data: Record<string, unknown>): Promise<string> {
   try {
     const env = vento();
-    const templatePath = join("./src/templates", templateName);
-    const template = await env.load(templatePath);
-    const result = await template(data);
+    const result = await env.runString(templateSource, data);
     return result.content;
   } catch (_e) {
     // Bubble up error to let caller decide fallback

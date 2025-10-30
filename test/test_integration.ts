@@ -3,7 +3,7 @@
 import { ensureDir, copy } from "std/fs/mod.ts";
 import { DENO_COMMAND_OPTIONS } from "../src/utils/constants.ts";
 import { readConfig } from "../src/utils/config.ts";
-import { waitForGraphNode, waitForGraphSync } from "../src/utils/graph-node.ts";
+import { waitForGraphSync } from "../src/utils/graph-node.ts";
 
 async function copyTestEvents(): Promise<string[]> {
   console.log("📁 Copying test event files...");
@@ -42,11 +42,11 @@ async function installTestSubgraph(): Promise<void> {
   console.log("📦 Installing test subgraph...");
   
   const process = new Deno.Command("deno", {
-    args: ["task", "run", "subgraph", "add", "./test/subgraph", "--name", "default"],
+    args: ["task", "cli", "subgraph", "add", "./test/subgraph", "--name", "default"],
     ...DENO_COMMAND_OPTIONS,
   });
 
-  const { code, stdout, stderr } = await process.output();
+  const { code, stderr } = await process.output();
 
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
@@ -60,11 +60,11 @@ async function runStateSetup(eventFiles: string[]): Promise<void> {
   console.log("🚀 Running state setup...");
   
   const process = new Deno.Command("deno", {
-    args: ["task", "run", "state", "set", ...eventFiles],
+    args: ["task", "cli", "state", "set", ...eventFiles],
     ...DENO_COMMAND_OPTIONS,
   });
   
-  const { code, stdout, stderr } = await process.output();
+  const { code, stderr } = await process.output();
   
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
@@ -108,7 +108,7 @@ function normalizeResponse(response: GraphQLResponse): GraphQLResponse {
   return normalized;
 }
 
-async function loadExpectedResponse(): Promise<any> {
+async function loadExpectedResponse(): Promise<unknown> {
   const fixturePath = "test/fixtures/expected_graphql_response.json";
   const content = await Deno.readTextFile(fixturePath);
   return JSON.parse(content);
@@ -123,7 +123,7 @@ async function queryGraphQL(): Promise<void> {
   
   // Read config to get GraphQL URL
   const config = await readConfig();
-  const graphqlUrl = config.default?.graphql_url;
+  const graphqlUrl = config.subgraphs.default?.graphql_url;
   
   if (!graphqlUrl) {
     throw new Error("No GraphQL URL found in config");
@@ -183,6 +183,24 @@ async function queryGraphQL(): Promise<void> {
   console.log("✅ GraphQL validation completed");
 }
 
+async function stopServices(): Promise<void> {
+  console.log("🛑 Stopping services...");
+  
+  const process = new Deno.Command("deno", {
+    args: ["task", "cli", "state", "stop"],
+    ...DENO_COMMAND_OPTIONS,
+  });
+  
+  const { code, stderr } = await process.output();
+  
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    console.warn(`Warning: Failed to stop services: ${errorText}`);
+  } else {
+    console.log("✅ Services stopped");
+  }
+}
+
 async function cleanup(copiedFiles: string[]): Promise<void> {
   console.log("🧹 Cleaning up test files...");
   
@@ -215,6 +233,7 @@ async function main(): Promise<void> {
     console.error("❌ Integration test failed:", error instanceof Error ? error.message : String(error));
     Deno.exit(1);
   } finally {
+    await stopServices();
     await cleanup(copiedFiles);
   }
 }

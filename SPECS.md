@@ -47,9 +47,17 @@ The tasks are:
   - Each function has the same arguments as the events and its purpose is only to emit the associated event
   - Generates contracts in `./{projectName}/src/` directory
 - `task contracts:deploy`
-  - Deploys generated contracts to the local Anvil node using Foundry scripts
+  - Deploys generated contracts to the local Anvil node
+  - Data sources: inject runtime bytecode at the address declared in `subgraph.yaml` using `anvil_setCode`
+  - Templates: inject runtime bytecode at a deterministic address derived from project and template name
+- `deno task install`
+  - Installs the CLI as a global executable named `graph-node-state-manager`
 - `task anvil:start | task anvil:stop | task anvil:setup`
   - Manage Anvil lifecycle; `anvil:setup` stops any running instance, starts a new one, generates contracts, and deploys them
+- `task anvil:mine [blocks]`
+  - Mine one or more blocks on Anvil (default 1)
+- `task anvil:increaseTime <seconds>`
+  - Increase the EVM time on Anvil by the given seconds using `evm_increaseTime`
 - `task anvil:inspect <txHash>`
   - Inspect a transaction using `debug_traceTransaction` on the local Anvil node
 - `task graph:start | task graph:stop | task graph:wipe`
@@ -79,12 +87,13 @@ The tool uses a `config.json` registry file at the repository root:
 {
   "my-project": {
     "subgraph_path": "./subgraph",
-    "contracts": [
-      {
-        "name": "TimedContract",
+    "contracts": {
+      "TimedContract": {
+        "alias": "TimedContract",
+        "contractName": "TimedContract",
         "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
       }
-    ],
+    },
     "graphql_url": "http://localhost:8000/subgraphs/id/QmUvX7Mi9KU72Rwa11SNY1Fo82iq8atXa4V7MqWtjyEqSD"
   }
 }

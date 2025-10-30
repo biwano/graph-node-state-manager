@@ -1,7 +1,8 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@types/node@*": "24.2.0"
+    "npm:@types/node@*": "24.2.0",
+    "npm:vento@*": "2.1.1"
   },
   "npm": {
     "@types/node@24.2.0": {
@@ -12,6 +13,9 @@
     },
     "undici-types@7.10.0": {
       "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
+    },
+    "vento@2.1.1": {
+      "integrity": "sha512-A0aoqYeSD7xab/8HwEqq7bhmwi3P3JmOOhC9HTbKWTom90N+YGOI+Diz6NmL7Ul+CTvEVcbJEXT0GpYkZQtuPQ=="
     }
   },
   "remote": {

@@ -4,18 +4,18 @@ import { SUBGRAPH_YAML_FILENAME, DENO_COMMAND_OPTIONS } from "../utils/constants
 import { upsertProject } from "../utils/config.ts";
 
 export async function subgraphAddTask(subgraphPath: string, projectDir: string, projectName: string): Promise<void> {
-  console.log(`Initializing foundry project at: ${projectDir}`);
+  console.info(`🔧 Initializing foundry project at: ${projectDir}`);
 
   // Validate subgraph YAML file
   const subgraphYamlPath = `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`;
-  console.log(`Validating subgraph YAML file: ${subgraphYamlPath}`);
+  console.debug(`🔍 Validating subgraph YAML file: ${subgraphYamlPath}`);
 
   const subgraphContent = await Deno.readTextFile(subgraphYamlPath);
   const subgraphData = parseYaml(subgraphContent) as Record<string, unknown>;
   if (!subgraphData.specVersion) {
     throw new Error("Invalid subgraph.yaml: missing required fields (specVersion, dataSources)");
   }
-  console.log("✅ Subgraph YAML validation passed");
+  console.debug("✅ Subgraph YAML validation passed");
 
   await ensureDir(projectDir);
 
@@ -29,11 +29,11 @@ export async function subgraphAddTask(subgraphPath: string, projectDir: string, 
     const errorText = new TextDecoder().decode(stderr);
     throw new Error(`Failed to initialize foundry project: ${errorText}`);
   }
-  console.log("✅ Foundry project initialized successfully!");
 
   await upsertProject(projectName, { subgraph_path: subgraphPath, active: true });
-  console.log(`✅ Updated registry with project: ${projectName}`);
-  console.log(`✅ Project '${projectName}' activated automatically`);
+  console.debug(`📝 Updated registry with project: ${projectName}`);
+
+  console.info("✅ Foundry project initialized successfully!");
 }
 
 

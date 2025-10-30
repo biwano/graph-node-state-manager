@@ -1,7 +1,7 @@
 import { DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
 
-async function removeVolume(volumeName: string, displayName: string): Promise<void> {
-  console.log(`🗑️  Removing ${displayName} data volume...`);
+async function removeVolume(volumeName: string): Promise<void> {
+  console.debug(`🗑️ Removing volume ${volumeName}...`);
   
   const volumeProcess = new Deno.Command("docker", {
     args: ["volume", "rm", volumeName],
@@ -13,20 +13,46 @@ async function removeVolume(volumeName: string, displayName: string): Promise<vo
   if (code !== 0) {
     const errorText = new TextDecoder().decode(stderr);
     if (!errorText.toLowerCase().includes("no such volume")) {
-      throw new Error(`Failed to remove ${displayName} volume: ${errorText}`);
+      throw new Error(`Failed to remove volume ${volumeName}: ${errorText}`);
     }
-    console.log(`ℹ️  ${displayName} volume not found (already removed)`);
+    console.debug(`ℹ️ Volume ${volumeName} not found (already removed)`);
   } else {
-    console.log(`✅ ${displayName} data volume removed`);
-    console.log(new TextDecoder().decode(stdout));
+    console.debug(`✅ Volume ${volumeName} removed`);
+    console.debug(new TextDecoder().decode(stdout));
   }
 }
 
-export async function wipeGraphNodeTask(): Promise<void> {
-  console.log("🧹 Wiping graph-node data...");
+async function getDockerProjectName(): Promise<string[]> {
+  console.debug("🔍 Extracting project name from docker compose...");
   
-  await removeVolume("graph-node-state-manager_ipfs-data", "IPFS");
-  await removeVolume("graph-node-state-manager_postgres-data", "Postgres");
+  const configProcess = new Deno.Command("docker", {
+    args: ["compose", "config", "--format", "json"],
+    ...DENO_COMMAND_OPTIONS,
+  });
 
-  console.log("✅ Graph-node data wiped successfully");
+  const { code, stdout, stderr } = await configProcess.output();
+  
+  if (code !== 0) {
+    const errorText = new TextDecoder().decode(stderr);
+    throw new Error(`Failed to get docker compose config: ${errorText}`);
+  }
+
+  const config = JSON.parse(new TextDecoder().decode(stdout));
+  
+  if (!config.name) {
+    throw new Error("Could not extract project name from docker-compose.yml. Make sure you're running this command from a directory with a valid docker-compose.yml file.");
+  }
+
+  return config.name;
+}
+
+export async function wipeGraphNodeTask(): Promise<void> {
+  console.info("🧹 Wiping graph-node data...");
+
+  const prefix = await getDockerProjectName();
+  await removeVolume(`${prefix}_ipfs-data`);
+  await removeVolume(`${prefix}_postgres-data`);
+
+
+  console.info("✅ Graph-node data wiped successfully");
 }
