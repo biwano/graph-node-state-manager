@@ -58,7 +58,7 @@ export async function deployContract(
 ): Promise<string> {
   const projectDir = `./foundry/${projectName}`;
   const runtimeBytecode = await getRuntimeBytecode(projectDir, contractName);
-  const deterministicAddress = await generateDeterministicAddress(projectName, contractName);
+  const deterministicAddress = await generateDeterministicAddress(projectName, alias ?? contractName);
   const isValidAddress = address && !(/^0x0{40}$/i.test(address));
   const targetAddress = isValidAddress ? address : deterministicAddress;
 

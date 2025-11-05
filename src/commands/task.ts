@@ -14,6 +14,7 @@ import { addStateTask } from "../tasks/state_add.ts";
 import { cliLog } from "../utils/logging.ts";
 import { mineAnvilBlocks } from "../utils/anvil.ts";
 import { increaseAnvilTimeTask } from "../tasks/anvil_increase_time.ts";
+import { getDeployedAddress } from "../utils/config.ts";
 
 export const killAnvilCommand = new Command()
   .name("anvil:stop")
@@ -118,6 +119,25 @@ export const deployTemplateCommand = new Command()
       cliLog(address);
     } catch (error) {
       console.error("Error deploying template:", error instanceof Error ? error.message : String(error));
+      Deno.exit(1);
+    }
+  });
+
+export const contractAddressCommand = new Command()
+  .name("contracts:address")
+  .description("Output the deployed address for a project's contract alias")
+  .arguments("<project:string> <alias:string>")
+  .action(async (_options, project: string, alias: string) => {
+    try {
+      const address = await getDeployedAddress(project, alias);
+      if (!address) {
+        throw new Error(
+          `No address found for alias '${alias}' in project '${project}'. Deploy contracts first or verify config.json.`,
+        );
+      }
+      cliLog(address);
+    } catch (error) {
+      console.error("Error getting contract address:", error instanceof Error ? error.message : String(error));
       Deno.exit(1);
     }
   });
@@ -246,6 +266,7 @@ export const taskCommand = new Command()
   .command("contracts:generate", generateCommand)
   .command("contracts:deploy", deployCommand)
   .command("contracts:deploy_template", deployTemplateCommand)
+  .command("contracts:address", contractAddressCommand)
   .command("graph:start", startGraphCommand)
   .command("graph:stop", stopGraphCommand)
   .command("graph:wipe", wipeGraphCommand)
