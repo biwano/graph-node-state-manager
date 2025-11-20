@@ -143,9 +143,9 @@ export async function castEvent(
   const event = contract.events.find((e) => e.name === eventName);
   if (!event) {
     const knownEvents = contract.events
-      .map((e) => eventSignature(e.name, e.params.map((i) => i.rawType)))
-      .join(", ");
-    throw new Error(`Unknown event '${eventName}'. Known events: ${knownEvents}`);
+      .map((e) => ` ${eventSignature(e.name, e.params.map((i) => i.rawType))}`)
+      .join("\n");
+    throw new Error(`Unknown event '${eventName}'. Known events: \n${knownEvents}`);
   }
 
   const expectedTypes = event.params.map((i) => i.rawType);
