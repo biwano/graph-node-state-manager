@@ -56,8 +56,8 @@ export async function waitForGraphNode(): Promise<void> {
 
   await waitForService(checkGraphNode, {
     serviceName: "Graph Node",
-    maxRetries: 30,
-    retryDelay: 2000
+    maxRetries: 24,
+    retryDelay: 5000
   });
 }
 
