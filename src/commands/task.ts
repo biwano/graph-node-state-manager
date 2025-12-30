@@ -23,7 +23,10 @@ export const killAnvilCommand = new Command()
     try {
       await killAnvilTask();
     } catch (error) {
-      console.error("Error killing anvil:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error killing anvil:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -35,15 +38,19 @@ export const startAnvilCommand = new Command()
     try {
       await startAnvilTask();
     } catch (error) {
-      console.error("Error starting anvil:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error starting anvil:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
 
-
 export const anvilSetupCommand = new Command()
   .name("anvil:setup")
-  .description("Setup anvil and deploy contracts: kill existing anvil, start new anvil, deploy contracts")
+  .description(
+    "Setup anvil and deploy contracts: kill existing anvil, start new anvil, deploy contracts",
+  )
   .action(async () => {
     try {
       await killAnvilTask();
@@ -51,7 +58,10 @@ export const anvilSetupCommand = new Command()
       await generateAllProjectsTask();
       await deployAllProjectsContractsTask();
     } catch (error) {
-      console.error("Error during anvil setup:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error during anvil setup:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -65,7 +75,10 @@ export const anvilMineCommand = new Command()
       await mineAnvilBlocks(blocks);
       console.info(`✅ Mined ${blocks} block(s) successfully`);
     } catch (error) {
-      console.error("Error mining blocks:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error mining blocks:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -78,32 +91,44 @@ export const anvilIncreaseTimeCommand = new Command()
     try {
       await increaseAnvilTimeTask(seconds);
     } catch (error) {
-      console.error("Error increasing time:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error increasing time:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
 
 export const generateCommand = new Command()
   .name("contracts:generate")
-  .description("Generate fake contracts for all registered projects based on subgraph definitions")
+  .description(
+    "Generate fake contracts for all registered projects based on subgraph definitions",
+  )
   .action(async () => {
     try {
       await generateAllProjectsTask();
     } catch (error) {
-      console.error("Error generating fake contracts:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error generating fake contracts:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
 
-
 export const deployCommand = new Command()
   .name("contracts:deploy")
-  .description("Deploy generated fake contracts on the local Anvil fork using Foundry script")
+  .description(
+    "Deploy generated fake contracts on the local Anvil fork using Foundry script",
+  )
   .action(async () => {
     try {
       await deployAllProjectsContractsTask();
     } catch (error) {
-      console.error("Error deploying fakes:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error deploying fakes:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -112,16 +137,35 @@ export const deployTemplateCommand = new Command()
   .name("contracts:deploy_template")
   .description("Deploy a template contract with a custom alias")
   .arguments("<project:string> <template:string> <alias:string>")
-  .action(async (_options, project: string, template: string, alias: string) => {
-    try {
-      const address = await deployTemplateTask(project, template, alias);
-      // If CLI flag is set, output the deployed address
-      cliLog(address);
-    } catch (error) {
-      console.error("Error deploying template:", error instanceof Error ? error.message : String(error));
-      Deno.exit(1);
-    }
-  });
+  .option(
+    "-a, --address <address>",
+    "Force the deployment address of the template",
+  )
+  .action(
+    async (
+      options: { address?: string },
+      project: string,
+      template: string,
+      alias: string,
+    ) => {
+      try {
+        const address = await deployTemplateTask(
+          project,
+          template,
+          alias,
+          options.address,
+        );
+        // If CLI flag is set, output the deployed address
+        cliLog(address);
+      } catch (error) {
+        console.error(
+          "Error deploying template:",
+          error instanceof Error ? error.message : String(error),
+        );
+        Deno.exit(1);
+      }
+    },
+  );
 
 export const contractAddressCommand = new Command()
   .name("contracts:address")
@@ -137,7 +181,10 @@ export const contractAddressCommand = new Command()
       }
       cliLog(address);
     } catch (error) {
-      console.error("Error getting contract address:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error getting contract address:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -149,7 +196,10 @@ export const startGraphCommand = new Command()
     try {
       await startGraphNodeTask();
     } catch (error) {
-      console.error("Error starting graph-node:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error starting graph-node:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -161,7 +211,10 @@ export const stopGraphCommand = new Command()
     try {
       await stopGraphNodeTask();
     } catch (error) {
-      console.error("Error stopping graph-node:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error stopping graph-node:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -173,7 +226,10 @@ export const wipeGraphCommand = new Command()
     try {
       await wipeGraphNodeTask();
     } catch (error) {
-      console.error("Error wiping graph-node data:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error wiping graph-node data:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -185,31 +241,37 @@ export const deployGraphCommand = new Command()
     try {
       await deployAllGraphsTask();
     } catch (error) {
-      console.error("Error deploying subgraphs:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error deploying subgraphs:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
 
 export const setupGraphCommand = new Command()
   .name("graph:setup")
-  .description("Complete graph setup: stop, wipe, start, and deploy all subgraphs")
+  .description(
+    "Complete graph setup: stop, wipe, start, and deploy all subgraphs",
+  )
   .action(async () => {
     try {
-      
       // Stop graph-node if running
       await stopGraphNodeTask();
-      
+
       // Wipe graph-node data
       await wipeGraphNodeTask();
-      
+
       // Start graph-node
       await startGraphNodeTask();
-      
+
       // Deploy all subgraphs
       await deployAllGraphsTask();
-      
     } catch (error) {
-      console.error("Error during graph setup:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error during graph setup:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
@@ -217,20 +279,32 @@ export const setupGraphCommand = new Command()
 export const eventCommand = new Command()
   .name("event")
   .arguments("<project:string> <alias:string> <event:string> [args...:string]")
-  .description("Generate a cast send command for a project's contract alias event")
-  .action(async (_options, project: string, alias: string, event: string, ...args: string[]) => {
-    try {
-      await castEvent(project, alias, event, args);
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : String(error));
-      Deno.exit(1);
-    }
-  });
+  .description(
+    "Generate a cast send command for a project's contract alias event",
+  )
+  .action(
+    async (
+      _options,
+      project: string,
+      alias: string,
+      event: string,
+      ...args: string[]
+    ) => {
+      try {
+        await castEvent(project, alias, event, args);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        Deno.exit(1);
+      }
+    },
+  );
 
 export const anvilInspectCommand = new Command()
   .name("anvil:inspect")
   .arguments("<txHash:string>")
-  .description("Inspect a transaction using debug_traceTransaction on the local Anvil node")
+  .description(
+    "Inspect a transaction using debug_traceTransaction on the local Anvil node",
+  )
   .action(async (_options, txHash: string) => {
     try {
       await inspectTxTask(txHash);
@@ -248,12 +322,14 @@ export const addStateCommand = new Command()
     try {
       await addStateTask(files);
     } catch (error) {
-      console.error("Error executing add-state command:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Error executing add-state command:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });
 
-  
 export const taskCommand = new Command()
   .name("task")
   .description("Task commands")
@@ -273,6 +349,4 @@ export const taskCommand = new Command()
   .command("graph:deploy", deployGraphCommand)
   .command("graph:setup", setupGraphCommand)
   .command("event", eventCommand)
-  .command("state:add", addStateCommand)
-  
-
+  .command("state:add", addStateCommand);

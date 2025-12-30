@@ -9,13 +9,19 @@ export async function deployTemplateTask(
   projectName: string,
   templateName: string,
   alias: string,
+  forcedAddress?: string,
 ): Promise<string> {
   console.info(
     `🚀 Deploying template '${templateName}' with alias '${alias}' for project: ${projectName}`,
   );
 
   // Use the pre-generated deploy script for the template and record under alias
-  const address = await deployContract(projectName, templateName, alias);
+  const address = await deployContract(
+    projectName,
+    templateName,
+    alias,
+    forcedAddress,
+  );
   console.info(
     `✅ Template '${templateName}' deployed successfully as '${alias}'`,
   );
