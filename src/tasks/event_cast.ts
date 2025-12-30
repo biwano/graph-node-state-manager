@@ -1,4 +1,8 @@
-import { ANVIL_DEFAULT_PRIVATE_KEY, ANVIL_DEFAULT_RPC_URL, DENO_COMMAND_OPTIONS } from "../utils/constants.ts";
+import {
+  ANVIL_DEFAULT_PRIVATE_KEY,
+  ANVIL_DEFAULT_RPC_URL,
+  DENO_COMMAND_OPTIONS,
+} from "../utils/constants.ts";
 import { getProjectConfig } from "../utils/config.ts";
 import { parseSubgraph } from "../utils/subgraph.ts";
 import { SUBGRAPH_YAML_FILENAME } from "../utils/constants.ts";
@@ -19,14 +23,13 @@ function extractTransactionHash(output: string): string {
   if (txHashMatch) {
     return txHashMatch[1];
   }
-  
+
   throw new Error(`Could not extract transaction hash from output: ${output}`);
 }
 
-
 function validateArgFormat(type: string, value: string): string | null {
   const t = type.trim();
-  
+
   // Handle array types
   if (t.endsWith("[]")) {
     const elementType = t.slice(0, -2);
@@ -34,15 +37,15 @@ function validateArgFormat(type: string, value: string): string | null {
     if (!/^\[.*\]$/.test(value)) {
       return `invalid array format (expected [value1,value2,...] or [])`;
     }
-    
+
     // Extract array contents
     const arrayContent = value.slice(1, -1).trim();
     if (arrayContent === "") {
       return null; // empty array is valid
     }
-    
+
     // Split by comma and validate each element
-    const elements = arrayContent.split(",").map(el => el.trim());
+    const elements = arrayContent.split(",").map((el) => el.trim());
     for (const element of elements) {
       const error = validateArgFormat(elementType, element);
       if (error) {
@@ -51,28 +54,30 @@ function validateArgFormat(type: string, value: string): string | null {
     }
     return null;
   }
-  
+
   // Handle fixed-size arrays like uint256[3]
   const fixedArrayMatch = t.match(/^(.+)\[(\d+)\]$/);
   if (fixedArrayMatch) {
     const elementType = fixedArrayMatch[1];
     const expectedLength = parseInt(fixedArrayMatch[2], 10);
-    
+
     // Parse array value
     if (!/^\[.*\]$/.test(value)) {
       return `invalid array format (expected [value1,value2,...])`;
     }
-    
+
     const arrayContent = value.slice(1, -1).trim();
     if (arrayContent === "") {
-      return expectedLength === 0 ? null : `invalid array length (expected ${expectedLength} elements, got 0)`;
+      return expectedLength === 0
+        ? null
+        : `invalid array length (expected ${expectedLength} elements, got 0)`;
     }
-    
-    const elements = arrayContent.split(",").map(el => el.trim());
+
+    const elements = arrayContent.split(",").map((el) => el.trim());
     if (elements.length !== expectedLength) {
       return `invalid array length (expected ${expectedLength} elements, got ${elements.length})`;
     }
-    
+
     for (const element of elements) {
       const error = validateArgFormat(elementType, element);
       if (error) {
@@ -81,13 +86,17 @@ function validateArgFormat(type: string, value: string): string | null {
     }
     return null;
   }
-  
+
   // Handle non-array types
   if (t === "address") {
-    return /^0x[0-9a-fA-F]{40}$/.test(value) ? null : `invalid address (expected 0x-prefixed 40 hex chars)`;
+    return /^0x[0-9a-fA-F]{40}$/.test(value)
+      ? null
+      : `invalid address (expected 0x-prefixed 40 hex chars)`;
   }
   if (t === "bool") {
-    return /^(true|false|0|1)$/i.test(value) ? null : `invalid bool (expected true|false|0|1)`;
+    return /^(true|false|0|1)$/i.test(value)
+      ? null
+      : `invalid bool (expected true|false|0|1)`;
   }
   if (t === "string") {
     return null; // any string accepted
@@ -95,11 +104,15 @@ function validateArgFormat(type: string, value: string): string | null {
   if (t.startsWith("bytes")) {
     const m = t.match(/^bytes(\d+)?$/);
     if (!m) return "invalid bytes type";
-    if (!/^0x[0-9a-fA-F]*$/.test(value)) return "invalid bytes (expected 0x-hex)";
+    if (!/^0x[0-9a-fA-F]*$/.test(value)) {
+      return "invalid bytes (expected 0x-hex)";
+    }
     if (m[1]) {
       const size = parseInt(m[1], 10);
       const hexLen = value.length - 2;
-      if (hexLen !== size * 2) return `invalid ${t} (expected ${size} bytes, got ${hexLen / 2})`;
+      if (hexLen !== size * 2) {
+        return `invalid ${t} (expected ${size} bytes, got ${hexLen / 2})`;
+      }
     }
     return null;
   }
@@ -112,7 +125,6 @@ function validateArgFormat(type: string, value: string): string | null {
   return null; // other solidity types not strictly validated here
 }
 
-
 export async function castEvent(
   projectName: string,
   alias: string,
@@ -121,23 +133,31 @@ export async function castEvent(
 ): Promise<void> {
   const projectConfig = await getProjectConfig(projectName);
   if (!projectConfig || !projectConfig.contracts) {
-    throw new Error(`No contracts found for project '${projectName}'. Deploy contracts first.`);
+    throw new Error(
+      `No contracts found for project '${projectName}'. Deploy contracts first.`,
+    );
   }
 
   // Find the contract by alias
   const contractEntry = projectConfig.contracts[alias];
   if (!contractEntry) {
     const knownAliases = Object.keys(projectConfig.contracts).join(", ");
-    throw new Error(`Unknown contract alias '${alias}'. Known aliases: ${knownAliases}`);
+    throw new Error(
+      `Unknown contract alias '${alias}'. Known aliases: ${knownAliases}`,
+    );
   }
 
   // Get contract details from subgraph using the contractName
   const subgraphPath = projectConfig.subgraph_path;
-  const { dataSources, templates } = await parseSubgraph(`${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`);
+  const { dataSources, templates } = await parseSubgraph(
+    `${subgraphPath}/${SUBGRAPH_YAML_FILENAME}`,
+  );
   const contracts = [...dataSources, ...templates];
   const contract = contracts.find((c) => c.name === contractEntry.contractName);
   if (!contract) {
-    throw new Error(`Contract '${contractEntry.contractName}' not found in subgraph definition`);
+    throw new Error(
+      `Contract '${contractEntry.contractName}' not found in subgraph definition`,
+    );
   }
 
   const event = contract.events.find((e) => e.name === eventName);
@@ -145,20 +165,30 @@ export async function castEvent(
     const knownEvents = contract.events
       .map((e) => ` ${eventSignature(e.name, e.params.map((i) => i.rawType))}`)
       .join("\n");
-    throw new Error(`Unknown event '${eventName}'. Known events: \n${knownEvents}`);
+    throw new Error(
+      `Unknown event '${eventName}'. Known events: \n${knownEvents}`,
+    );
   }
 
   const expectedTypes = event.params.map((i) => i.rawType);
   if (eventArgs.length !== expectedTypes.length) {
     const sig = eventSignature(event.name, expectedTypes);
-    throw new Error(`Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}. Passed arguments: [${eventArgs.join(", ")}]`);
+    throw new Error(
+      `Invalid argument count: got ${eventArgs.length}, expected ${expectedTypes.length}. Signature: ${sig}. Passed arguments: [${
+        eventArgs.join(", ")
+      }]`,
+    );
   }
 
   for (let i = 0; i < expectedTypes.length; i++) {
     const err = validateArgFormat(expectedTypes[i], eventArgs[i]);
     if (err) {
       const sig = eventSignature(event.name, expectedTypes);
-      throw new Error(`Invalid argument #${i + 1} ('${event.params[i].name}'): ${err}. Signature: ${sig}. passed : ${eventArgs[i]}`);
+      throw new Error(
+        `Invalid argument #${i + 1} ('${
+          event.params[i].name
+        }'): ${err}. Signature: ${sig}. passed : ${eventArgs[i]}`,
+      );
     }
   }
 
@@ -167,7 +197,7 @@ export async function castEvent(
   if (!address) {
     throw new Error(
       `No deployed address found for alias '${alias}' in project '${projectName}'. ` +
-      `Deploy contracts first (e.g., 'deno task run task anvil:setup') so addresses are recorded in config.json.`
+        `Deploy contracts first (e.g., 'deno task run task anvil:setup') so addresses are recorded in config.json.`,
     );
   }
 
@@ -196,10 +226,7 @@ export async function castEvent(
   const output = new TextDecoder().decode(stdout);
   console.debug(output);
   console.info("✅ Event transaction sent successfully.");
- 
+
   const txHash = extractTransactionHash(output);
   cliLog(txHash);
-
 }
-
-

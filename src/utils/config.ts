@@ -1,14 +1,15 @@
 import { exists } from "std/fs/exists.ts";
 import { CONFIG_PATH } from "./constants.ts";
 
-export interface ProjectConfigContract { 
-  alias: string; 
+export interface ProjectConfigContract {
+  alias: string;
   contractName: string;
-  address: string; 
+  address: string;
 }
 
-export interface ProjectConfigEntry { 
-  subgraph_path: string; 
+export interface ProjectConfigEntry {
+  subgraph_path: string;
+  shouldNotUseTemplateAddress?: string[];
   contracts?: Record<string, ProjectConfigContract>;
   graphql_url?: string;
   active?: boolean;
@@ -25,9 +26,15 @@ export async function readConfig(): Promise<ProjectConfig> {
   const content = await Deno.readTextFile(CONFIG_PATH);
   const parsed = JSON.parse(content) as ProjectConfig;
   if (!parsed || typeof parsed !== "object" || !("subgraphs" in parsed)) {
-    throw new Error("Invalid config format: expected { name?: string, subgraphs: { ... } }");
+    throw new Error(
+      "Invalid config format: expected { name?: string, subgraphs: { ... } }",
+    );
   }
-  return { name: parsed.name, logLevel: parsed.logLevel, subgraphs: parsed.subgraphs || {} };
+  return {
+    name: parsed.name,
+    logLevel: parsed.logLevel,
+    subgraphs: parsed.subgraphs || {},
+  };
 }
 
 export async function writeConfig(config: ProjectConfig): Promise<void> {
@@ -39,9 +46,13 @@ export async function writeConfig(config: ProjectConfig): Promise<void> {
   await Deno.writeTextFile(CONFIG_PATH, JSON.stringify(normalized, null, 2));
 }
 
-export async function upsertProject(projectName: string, entry: Partial<ProjectConfigEntry>): Promise<ProjectConfig> {
+export async function upsertProject(
+  projectName: string,
+  entry: Partial<ProjectConfigEntry>,
+): Promise<ProjectConfig> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
+  const current = cfg.subgraphs[projectName] ||
+    { subgraph_path: "", contracts: {} };
   const merged: ProjectConfigEntry = { ...current, ...entry };
   cfg.subgraphs[projectName] = merged;
   await writeConfig(cfg);
@@ -66,7 +77,8 @@ export async function upsertContract(
   address: string,
 ): Promise<void> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
+  const current = cfg.subgraphs[projectName] ||
+    { subgraph_path: "", contracts: {} };
   const contracts = current.contracts || {};
   const entry: ProjectConfigContract = { alias, contractName, address };
   contracts[alias] = entry;
@@ -77,13 +89,17 @@ export async function upsertContract(
 
 export async function clearContracts(projectName: string): Promise<void> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: {} };
+  const current = cfg.subgraphs[projectName] ||
+    { subgraph_path: "", contracts: {} };
   current.contracts = {};
   cfg.subgraphs[projectName] = current;
   await writeConfig(cfg);
 }
 
-export async function getDeployedAddress(projectName: string, alias: string): Promise<string | null> {
+export async function getDeployedAddress(
+  projectName: string,
+  alias: string,
+): Promise<string | null> {
   const cfg = await readConfig();
   const entry = cfg.subgraphs[projectName];
   if (!entry || !entry.contracts) return null;
@@ -100,7 +116,10 @@ export async function logDeployedSubgraphsSummary(): Promise<void> {
     const cfg = await readConfig();
     const subgraphs = cfg.subgraphs || {};
     const deployed = Object.entries(subgraphs)
-      .map(([name, entry]) => ({ name, url: (entry as { graphql_url?: string }).graphql_url }))
+      .map(([name, entry]) => ({
+        name,
+        url: (entry as { graphql_url?: string }).graphql_url,
+      }))
       .filter((x) => Boolean(x.url));
 
     if (deployed.length > 0) {
@@ -109,22 +128,30 @@ export async function logDeployedSubgraphsSummary(): Promise<void> {
         console.info(`  • ${name}: ${url}`);
       }
     } else {
-      console.warn("⚠️ No deployed subgraphs found in config (missing graphql_url).");
+      console.warn(
+        "⚠️ No deployed subgraphs found in config (missing graphql_url).",
+      );
     }
   } catch (_error) {
     // Ignore errors in summary logging
   }
 }
 
-export async function setGraphQLUrl(projectName: string, graphqlUrl: string): Promise<void> {
+export async function setGraphQLUrl(
+  projectName: string,
+  graphqlUrl: string,
+): Promise<void> {
   const cfg = await readConfig();
-  const current = cfg.subgraphs[projectName] || { subgraph_path: "", contracts: [] };
+  const current = cfg.subgraphs[projectName] ||
+    { subgraph_path: "", contracts: [] };
   current.graphql_url = graphqlUrl;
   cfg.subgraphs[projectName] = current;
   await writeConfig(cfg);
 }
 
-export async function getActiveProjects(): Promise<Record<string, { subgraph_path: string }>> {
+export async function getActiveProjects(): Promise<
+  Record<string, { subgraph_path: string }>
+> {
   // Check if config exists
   if (!(await exists(CONFIG_PATH))) {
     throw new Error("No projects found in config. Run 'subgraph:add' first.");
@@ -132,30 +159,61 @@ export async function getActiveProjects(): Promise<Record<string, { subgraph_pat
 
   const configContent = await Deno.readTextFile(CONFIG_PATH);
   const config = JSON.parse(configContent) as ProjectConfig;
-  
+
   // Filter for active projects only
   const activeProjects: Record<string, { subgraph_path: string }> = {};
   for (const [projectName, projectConfig] of Object.entries(config.subgraphs)) {
     if (projectConfig.active === true) {
-      activeProjects[projectName] = { subgraph_path: projectConfig.subgraph_path };
+      activeProjects[projectName] = {
+        subgraph_path: projectConfig.subgraph_path,
+      };
     }
   }
-  
+
   const activeProjectNames = Object.keys(activeProjects);
   if (activeProjectNames.length === 0) {
-    throw new Error("No active projects found in config. Run 'subgraph:activate' first.");
+    throw new Error(
+      "No active projects found in config. Run 'subgraph:activate' first.",
+    );
   }
 
   return activeProjects;
 }
 
-export async function getProjectConfig(projectName: string): Promise<ProjectConfigEntry> {
+export async function getProjectConfig(
+  projectName: string,
+): Promise<ProjectConfigEntry> {
   const config = await readConfig();
   const knownProjects = Object.keys(config.subgraphs);
   if (!config.subgraphs[projectName]) {
-    throw new Error(`Unknown project '${projectName}'. Known projects: ${knownProjects.join(", ")}`);
+    throw new Error(
+      `Unknown project '${projectName}'. Known projects: ${
+        knownProjects.join(", ")
+      }`,
+    );
   }
   return config.subgraphs[projectName];
 }
 
+/**
+ * Checks if a contract name should NOT use the template address
+ * by checking the forceDeterministicAddresses field in the project config
+ */
+export async function shouldNotUseTemplateAddress(
+  projectName: string,
+  contractName: string,
+): Promise<boolean> {
+  try {
+    const config = await getProjectConfig(projectName);
 
+    const shouldNotUseTemplateAddress = config.shouldNotUseTemplateAddress;
+    return shouldNotUseTemplateAddress?.includes(contractName) ?? false;
+  } catch (error) {
+    console.debug(
+      `Failed to check shouldNotUseTemplateAddress for ${contractName}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return false;
+  }
+}
