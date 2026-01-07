@@ -70,6 +70,38 @@ export async function removeProject(projectName: string): Promise<void> {
   await writeConfig(cfg);
 }
 
+/**
+ * Checks if another contract in the config already uses the given address.
+ * Throws an error if a duplicate is found (excluding the current contract being updated).
+ */
+function validateAddressUniqueness(
+  config: ProjectConfig,
+  address: string,
+  projectName: string,
+  alias: string,
+): void {
+  for (
+    const [subgraphName, subgraphEntry] of Object.entries(config.subgraphs)
+  ) {
+    if (subgraphEntry.contracts) {
+      for (
+        const [contractAlias, contract] of Object.entries(
+          subgraphEntry.contracts,
+        )
+      ) {
+        if (
+          contract.address === address &&
+          !(subgraphName === projectName && contractAlias === alias)
+        ) {
+          throw new Error(
+            `Address ${address} is already used by contract "${contractAlias}" (${contract.contractName}) in project "${subgraphName}"`,
+          );
+        }
+      }
+    }
+  }
+}
+
 export async function upsertContract(
   projectName: string,
   alias: string,
@@ -80,6 +112,9 @@ export async function upsertContract(
   const current = cfg.subgraphs[projectName] ||
     { subgraph_path: "", contracts: {} };
   const contracts = current.contracts || {};
+
+  validateAddressUniqueness(cfg, address, projectName, alias);
+
   const entry: ProjectConfigContract = { alias, contractName, address };
   contracts[alias] = entry;
   current.contracts = contracts;
